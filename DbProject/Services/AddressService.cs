@@ -7,10 +7,14 @@ namespace DbProject.Services;
 public class AddressService
 {
     private readonly AddressRepository _addressRepository;
+    private readonly ProductRepository _productRepository;
+    private readonly CustomerRepository _customerRepository;
 
-    public AddressService(AddressRepository addressRepository)
+    public AddressService(AddressRepository addressRepository, ProductRepository productRepository, CustomerRepository customerRepository)
     {
         _addressRepository = addressRepository;
+        _productRepository = productRepository;
+        _customerRepository = customerRepository;
     }
 
     public AddressEntity CreateAddress(AddressEntity entity)
@@ -51,11 +55,11 @@ public class AddressService
     {
         try
         {
-            var addressEntity = _addressRepository.GetAll();
-            if(addressEntity != null)
+            var addresses = _addressRepository.GetAll();
+            if(addresses != null)
             {
                 var addressList = new HashSet<AddressEntity>();
-                foreach(var address in addressEntity)
+                foreach(var address in addresses)
                 {
                     addressList.Add(address);
                 }
@@ -92,6 +96,22 @@ public class AddressService
         }
         catch (Exception ex) { Console.WriteLine("ERROR :: " + ex.Message); }
         return false;
+    }
+
+    public bool HasCustomers(int addressId)
+    {
+        try
+        {
+            //hömta kunder kopplade till addressen
+            var customerInAddress = _customerRepository.GetAll().Where(x => x.Id == addressId);
+            return customerInAddress.Any();
+
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("ERROR :: " + ex.Message);
+            return false;
+        }
     }
 
 }

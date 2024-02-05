@@ -7,42 +7,55 @@ namespace DbProject.Repositories;
 
 public class BaseRepository<TEntity, TContext> where TEntity : class where TContext : DbContext
 {
-    private readonly CustomerDbContext _customerContext;
+    private readonly TContext _context;
 
-    public BaseRepository(CustomerDbContext customerContext)
+    public BaseRepository(TContext context)
     {
-        _customerContext = customerContext;
+        _context = context;
     }
 
-
+    /// <summary>
+    ///     Saves an entity to database
+    /// </summary>
+    /// <param name="entity">The entity to be saved</param>
+    /// <returns>the saved entity</returns>
     public virtual TEntity Create(TEntity entity)
     {
         try
         {
-            _customerContext.Set<TEntity>().Add(entity);
-            _customerContext.SaveChanges();
+            _context.Set<TEntity>().Add(entity);
+            _context.SaveChanges();
             return entity;
         }
         catch(Exception ex) {Console.WriteLine("ERROR :: " + ex.Message); }
         return null!;
     }
 
+    /// <summary>
+    ///     Gets one entity from database based on the predicate/expression
+    /// </summary>
+    /// <param name="predicate">the predicate/expression to filter the entities</param>
+    /// <returns>the entity that matches predicate/expression, else returns null</returns>
     public virtual TEntity GetOne(Expression<Func<TEntity, bool>> predicate)
     {
         try
         {
-            var entity = _customerContext.Set<TEntity>().FirstOrDefault(predicate);
+            var entity = _context.Set<TEntity>().FirstOrDefault(predicate);
             return entity!;
         }
         catch (Exception ex) { Console.WriteLine("ERROR :: " + ex.Message); }
         return null!;
     }
 
+    /// <summary>
+    ///     Gets all entities from database
+    /// </summary>
+    /// <returns>a list of all entities</returns>
     public virtual IEnumerable<TEntity> GetAll()
     {
         try
         {
-            var result = _customerContext.Set<TEntity>().ToList();
+            var result = _context.Set<TEntity>().ToList();
             return result;
 
         }
@@ -50,15 +63,21 @@ public class BaseRepository<TEntity, TContext> where TEntity : class where TCont
         return null!;
     }
 
+    /// <summary>
+    ///     Updates an entity in database based on the specific predicate/expression
+    /// </summary>
+    /// <param name="predicate">the predicate/expression to find the entity to be updated</param>
+    /// <param name="newEntity">the new entity data to update</param>
+    /// <returns>the updated entity if found, else returns null</returns>
     public virtual TEntity Update(Expression<Func<TEntity, bool>> predicate, TEntity newEntity)
     {
         try
         {
-            var existingEntity = _customerContext.Set<TEntity>().FirstOrDefault(predicate);
+            var existingEntity = _context.Set<TEntity>().FirstOrDefault(predicate);
             if (existingEntity != null)
             {
-                _customerContext.Entry(existingEntity).CurrentValues.SetValues(newEntity);
-                _customerContext.SaveChanges();
+                _context.Entry(existingEntity).CurrentValues.SetValues(newEntity);
+                _context.SaveChanges();
                 return existingEntity;
             }
         }
@@ -66,15 +85,20 @@ public class BaseRepository<TEntity, TContext> where TEntity : class where TCont
         return null!;
     }
 
+    /// <summary>
+    ///     Deletes an entity based on the specific predicate/expression
+    /// </summary>
+    /// <param name="predicate">>the predicate/expression to find the entity to be deleted</param>
+    /// <returns>true if deleted successfully, else false</returns>
     public virtual bool Delete(Expression<Func<TEntity, bool>> predicate)
     {
         try
         {
-            var entity = _customerContext.Set<TEntity>().FirstOrDefault(predicate);
+            var entity = _context.Set<TEntity>().FirstOrDefault(predicate);
             if(entity != null)
             {
-                _customerContext.Set<TEntity>().Remove(entity);
-                _customerContext.SaveChanges();
+                _context.Set<TEntity>().Remove(entity);
+                _context.SaveChanges();
 
                 return true;
             }
@@ -83,11 +107,16 @@ public class BaseRepository<TEntity, TContext> where TEntity : class where TCont
         return false;
     }
 
+    /// <summary>
+    ///     checks based on the predicate/expression if an entity exists
+    /// </summary>
+    /// <param name="predicate">the predicate/expression to check if entity exists</param>
+    /// <returns>True if it exists, else false</returns>
     public virtual bool Exists(Expression<Func<TEntity, bool>> predicate)
     {
         try
         {
-            var existing = _customerContext.Set<TEntity>().Any(predicate);
+            var existing = _context.Set<TEntity>().Any(predicate);
             return existing;
 
         }

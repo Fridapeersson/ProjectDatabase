@@ -68,11 +68,11 @@ public class CustomerService
     {
         try
         {
-            var customerEntity = _customerRepository.GetAll();
-            if(customerEntity != null) 
+            var customers = _customerRepository.GetAll();
+            if(customers != null) 
             {
                 var customerList = new HashSet<CustomerEntity>();
-                foreach(var customer in customerEntity)
+                foreach(var customer in customers)
                 {
                     customerList.Add(customer);
                 }

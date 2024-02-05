@@ -6,9 +6,7 @@ namespace DbProject.Repositories;
 
 public class AddressRepository : BaseRepository<AddressEntity, CustomerDbContext>
 {
-    private readonly CustomerDbContext _customerContext;
-    public AddressRepository(CustomerDbContext customerContext) : base(customerContext)
+    public AddressRepository(CustomerDbContext context) : base(context)
     {
-        _customerContext = customerContext;
     }
 }
