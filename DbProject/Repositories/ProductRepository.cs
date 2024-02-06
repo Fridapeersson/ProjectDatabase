@@ -14,25 +14,38 @@ public class ProductRepository : BaseRepository<Product, ProductCatalogContext>
         _context = context;
     }
 
+/// <summary>
+///     deletes a product based on the preducate/expression
+/// </summary>
+/// <param name="predicate">the predicate/expression used to filter the product to be deleted</param>
+/// <returns>True if the product was deleted, else false</returns>
     public override bool Delete(Expression<Func<Product, bool>> predicate)
     {
-        var productToDelte = _context.Products
+        var productToDelete = _context.Products
             .Include(i => i.Description)
+            .Include(i => i.Reviews)
             .FirstOrDefault(predicate);
 
-        if(productToDelte != null)
+        if(productToDelete != null)
         {
-            _context.Products.Remove(productToDelte);
-            if(productToDelte.Description != null)
+            _context.Reviews.RemoveRange(productToDelete.Reviews);
+
+            _context.Products.Remove(productToDelete);
+            if(productToDelete.Description != null)
             {
-                _context.Descriptions.Remove(productToDelte.Description);
+                _context.Descriptions.Remove(productToDelete.Description);
             }
+
             _context.SaveChanges();
             return true;
         }
         return false;
     }
 
+    /// <summary>
+    ///     Gets all ProductEntity objects including associated objects (Manufacture, Category, Description, OrderRows, Reviews)
+    /// </summary>
+    /// <returns>A list of ProductEntities including associated objects (Manufacture, Category, Description, OrderRows, Reviews)</returns>
     public override IEnumerable<Product> GetAll()
     {
         try
@@ -48,6 +61,12 @@ public class ProductRepository : BaseRepository<Product, ProductCatalogContext>
         catch (Exception ex) { Console.WriteLine("ERROR :: " + ex.Message); }
         return null!;
     }
+
+    /// /// <summary>
+    ///     Get one ProductEntity object with including associated objects (Manufacture, Category, Description, OrderRows, Reviews) based on predicate/expression
+    /// </summary>
+    /// <param name="predicate">predicate/expression used to filter ProductEntitiy objects</param>
+    /// <returns>An ProductEntity that matches the predicate/expression, including associated objects (Manufacture, Category, Description, OrderRows, Reviews)</returns>
 
     public override Product GetOne(Expression<Func<Product, bool>> predicate)
     {
@@ -66,5 +85,4 @@ public class ProductRepository : BaseRepository<Product, ProductCatalogContext>
         catch (Exception ex) { Console.WriteLine("ERROR :: " + ex.Message); }
         return null!;
     }
-
 }

@@ -99,7 +99,7 @@ public class OrderRowService
 
             foreach (var groupedOrderRow in groupedOrderRows)
             {
-                Console.WriteLine($"Order íd {groupedOrderRow.Key}:");
+                Console.WriteLine($"Order id {groupedOrderRow.Key}:");
                 foreach (var orderRow in groupedOrderRow)
                 {
                     Console.WriteLine($"Product: {orderRow.Product.ProductName}, Quantity: {orderRow.Quantity}");

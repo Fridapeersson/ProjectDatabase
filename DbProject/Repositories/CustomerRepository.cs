@@ -13,37 +13,10 @@ public class CustomerRepository : BaseRepository<CustomerEntity, CustomerDbConte
     {
         _customerContext = context;
     }
-
     /// <summary>
-    ///     Delete a customer
+    ///     Gets all CustomerEntity objects including associated objects (Address, Role)
     /// </summary>
-    /// <param name="predicate"></param>
-    /// <returns></returns>
-    //public override bool Delete(Expression<Func<CustomerEntity, bool>> predicate)
-    //{
-    //    try
-    //    {
-    //        var customerToDelete = _customerContext.Customer
-    //        .Include(i => i.Address)
-    //        .FirstOrDefault(predicate);
-
-    //        if (customerToDelete != null)
-    //        {
-    //            _customerContext.Customer.Remove(customerToDelete);
-
-    //            if(customerToDelete.Address != null)
-    //            {
-    //                _customerContext.Address.Remove(customerToDelete.Address);
-    //            }
-    //            _customerContext.SaveChanges();
-    //            return true;
-    //        }
-    //    }
-    //    catch (Exception ex) { Console.WriteLine("ERROR :: " + ex.Message); }
-    //    return false;
-    //}
-
-
+    /// <returns>A list of CustomerEntities including associated objects (Address, Role)</returns>
     public override IEnumerable<CustomerEntity> GetAll()
     {
         try
@@ -57,6 +30,11 @@ public class CustomerRepository : BaseRepository<CustomerEntity, CustomerDbConte
         return null!;
     }
 
+    /// <summary>
+    ///     Get one CustomerEntity object with including associated objects (Address, Role) based on predicate/expression
+    /// </summary>
+    /// <param name="predicate">predicate/expression used to filter CustomerEntitiy objects</param>
+    /// <returns>An CustomerEntity that matches the predicate/expression, including associated objects (Address, Role)</returns>
     public override CustomerEntity GetOne(Expression<Func<CustomerEntity, bool>> predicate)
     {
         try

@@ -17,12 +17,17 @@ public class AddressService
         _customerRepository = customerRepository;
     }
 
+    /// <summary>
+    ///     Creates a new addressEntity if it doesn't already exists in database
+    /// </summary>
+    /// <param name="entity">The address entity to create</param>
+    /// <returns>The created address entity if it was successfully created, else null</returns>
     public AddressEntity CreateAddress(AddressEntity entity)
     {
         try
         {
-            //if(!_addressRepository.Exists(x => x.Id == entity.Id))
-            //{
+            if (!_addressRepository.Exists(x => x.Id == entity.Id))
+            {
                 var addressEntity = _addressRepository.Create(new AddressEntity
                 {
                     Id = entity.Id,
@@ -31,12 +36,17 @@ public class AddressService
                     City = entity.City,
                 });
                 return addressEntity;
-            //}
+            }
         }
         catch (Exception ex) { Console.WriteLine("ERROR :: " + ex.Message); }
         return null!;
     }
 
+    /// <summary>
+    ///     Gets one AddressEntity based on the provided predicate/expression
+    /// </summary>
+    /// <param name="predicate">The predicate/expression used to filter AddressEntity objects</param>
+    /// <returns>The addressEntity that matches the predicate/expression, else null</returns>
     public AddressEntity GetOneAddress(Expression<Func<AddressEntity, bool>> predicate)
     {
         try
@@ -51,6 +61,10 @@ public class AddressService
         return null!;
     }
 
+    /// <summary>
+    ///     Gets all AddressEntities from database
+    /// </summary>
+    /// <returns>A collection of AddressEntity objects, else null</returns>
     public IEnumerable<AddressEntity> GetAllAddresses()
     {
         try
@@ -70,6 +84,11 @@ public class AddressService
         return null!;
     }
 
+    /// <summary>
+    ///     Updates an existing AddressEntity in the database
+    /// </summary>
+    /// <param name="addressEntity">The addressEntity object containing updated information</param>
+    /// <returns>The updated AddressEntity object, else null</returns>
     public AddressEntity UpdateAddress(AddressEntity addressEntity)
     {
         try
@@ -84,6 +103,11 @@ public class AddressService
         return null!;
     }
 
+    /// <summary>
+    ///     Deletes an addressEntity based on predicate/expression
+    /// </summary>
+    /// <param name="predicate">The predicate/expression used to filter address entities</param>
+    /// <returns>True if deleted successfully, else false</returns>
     public bool DeleteAddress(Expression<Func<AddressEntity, bool>> predicate)
     {
         try
@@ -98,14 +122,23 @@ public class AddressService
         return false;
     }
 
+    /// <summary>
+    ///     Checks if the addressEntity with specified addressId has associated customers
+    /// </summary>
+    /// <param name="addressId">The id of the addressentity to check</param>
+    /// <returns>True if the addressEntity has associated customers, else false</returns>
     public bool HasCustomers(int addressId)
     {
         try
         {
             //hömta kunder kopplade till addressen
-            var customerInAddress = _customerRepository.GetAll().Where(x => x.Id == addressId);
-            return customerInAddress.Any();
-
+            var customerInAddress = _customerRepository.GetAll().Where(x => x.AddressId == addressId);
+            if(customerInAddress.Any())
+            {
+                return true;
+            }
+            //return customerInAddress.Any();
+            return false;
         }
         catch (Exception ex)
         {

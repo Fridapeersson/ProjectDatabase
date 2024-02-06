@@ -1,4 +1,6 @@
-﻿namespace DbProject.Dtos;
+﻿using DbProject.Entities;
+
+namespace DbProject.Dtos;
 
 public class CreateCustomerDto
 {
@@ -10,6 +12,9 @@ public class CreateCustomerDto
     public string PostalCode { get; set; } = null!;
     public string City { get; set; } = null!;
     public string RoleName { get; set; } = null!;
+    public AddressEntity Address { get; set; } = null!;
+
+
 
     public int AddressId { get; set; }
     public int RoleId { get; set; }

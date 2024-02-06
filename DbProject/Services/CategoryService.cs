@@ -16,7 +16,11 @@ public class CategoryService
         _productRepository = productRepository;
     }
 
-
+    /// <summary>
+    ///     Creates a new CategoryEntity in database
+    /// </summary>
+    /// <param name="entity">the category entity to create</param>
+    /// <returns>the created categoryentity</returns>
     public Category CreateCategory(Category entity)
     {
         try
@@ -30,7 +34,10 @@ public class CategoryService
         catch (Exception ex) { Console.WriteLine("ERROR :: " + ex.Message); }
         return null!;
     }
-
+    /// <summary>
+    ///     Gets all categoryEntities from database
+    /// </summary>
+    /// <returns>A collection of all categories</returns>
     public IEnumerable<Category> GetAllCategories()
     {
         try
@@ -50,6 +57,11 @@ public class CategoryService
         return null!;
     }
 
+    /// <summary>
+    ///     Gets one categoryentity from database based on provided predicate/expression
+    /// </summary>
+    /// <param name="predicate">the predicate/expression that filter the category</param>
+    /// <returns>the categoryEntity that matches the predicate/expression</returns>
     public Category GetOneCategory(Expression<Func<Category, bool>> predicate)
     {
         try
@@ -64,6 +76,11 @@ public class CategoryService
         return null!;
     }
 
+    /// <summary>
+    ///     Updates a category in database
+    /// </summary>
+    /// <param name="categoryEntity">The updated category entity</param>
+    /// <returns>the updated CategoryEntity</returns>
     public Category UpdateCategory(Category categoryEntity)
     {
         try
@@ -78,6 +95,11 @@ public class CategoryService
         return null!;
     }
 
+    /// <summary>
+    ///     Deletes a category from database based on the provided predicate/expression
+    /// </summary>
+    /// <param name="predicate">the predicate/expression that filter the categories to delete</param>
+    /// <returns>True if deleted successfully, else false</returns>
     public bool DeleteCategory(Expression<Func<Category, bool>> predicate)
     {
         try
@@ -92,6 +114,11 @@ public class CategoryService
         return false;
     }
 
+    /// <summary>
+    ///     Checks if there are any products associated wioth the specified category
+    /// </summary>
+    /// <param name="categoryId">the if of the category to check for associated products</param>
+    /// <returns>True if there is associated products, else false</returns>
     public bool HasProducts(int categoryId)
     {
         try

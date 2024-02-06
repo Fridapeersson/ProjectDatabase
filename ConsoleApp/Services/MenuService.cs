@@ -4,7 +4,9 @@ using DbProject.Repositories;
 using DbProject.Services;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
+using System.Data;
 using System.Diagnostics;
+using System.Net;
 
 namespace ConsoleApp.Services;
 
@@ -45,9 +47,13 @@ public class MenuService
             ClearAndTitle("Database Project");
 
             Console.WriteLine("1. Customer Menu");
-            Console.WriteLine("2. Product Menu");
-            Console.WriteLine("3. Order Menu");
-            Console.WriteLine("4. Review Menu");
+            Console.WriteLine("2. Address Menu");
+            Console.WriteLine("3. Role Menu");
+            Console.WriteLine("4. Product Menu");
+            Console.WriteLine("5. Category Menu");
+            Console.WriteLine("6. Manufacture Menu");
+            Console.WriteLine("7. Order Menu");
+            Console.WriteLine("8. Review Menu");
 
             Console.WriteLine("\n9. Exit Program");
 
@@ -62,14 +68,30 @@ public class MenuService
                     break;
 
                 case "2":
-                    ProductMenu();
+                    AddressMenu();
                     break;
 
                 case "3":
-                    OrderMenu();
+                    RoleMenu();
                     break;
 
                 case "4":
+                    ProductMenu();
+                    break;
+
+                case "5":
+                    CategoryMenu();
+                    break;
+
+                case "6":
+                    ManufactureMenu();
+                    break;
+
+                case "7":
+                    OrderMenu();
+                    break;
+
+                case "8":
                     ReviewMenu();
                     break;
 
@@ -173,28 +195,81 @@ public class MenuService
             Console.Write("City: ");
             var city = Console.ReadLine()!.ToLower();
 
-            var customerDto = _customerService.CreateCustomer(new CreateCustomerDto
-            {
-                FirstName = firstName,
-                LastName = lastName,
-                Email = email,
-                RoleName = roleName,
-                Street = street,
-                PostalCode = postalCode,
-                City = city
-            });
+            //var customerDto = _customerService.CreateCustomer(new CreateCustomerDto
+            //{
+            //    FirstName = firstName,
+            //    LastName = lastName,
+            //    Email = email,
+            //    RoleName = roleName,
+            //    Street = street,
+            //    PostalCode = postalCode,
+            //    City = city
+            //});
 
-            if (customerDto != null)
+            var existingAddress = _addressService.GetOneAddress(x => x.Street.ToLower() == street && x.PostalCode.ToLower() == postalCode && x.City.ToLower() == city);
+
+            if (existingAddress != null)
             {
-                //Console.Clear();
-                Console.WriteLine($"Customer {firstName} {lastName} has been added");
-                PressToContinue();
+                // Skapa kund med befintlig address
+                var customerDto = _customerService.CreateCustomer(new CreateCustomerDto
+                {
+                    FirstName = firstName,
+                    LastName = lastName,
+                    Email = email,
+                    RoleName = roleName,
+                    AddressId = existingAddress.Id,
+                    Address = existingAddress
+                });
+
+                if (customerDto != null)
+                {
+                    Console.WriteLine($"Customer {firstName} {lastName} has been added (with existing address)");
+                    PressToContinue();
+                }
+                else
+                {
+                    Console.WriteLine("Something went wrong. Customer has not been added");
+                    PressToContinue();
+                }
             }
             else
             {
-                //Console.Clear();
-                Console.WriteLine("Something went wrong. Customer has not been added");
-                PressToContinue();
+                // Skapa ny address och kund
+                var newAddressDto = _addressService.CreateAddress(new AddressEntity
+                {
+                    Street = street,
+                    PostalCode = postalCode,
+                    City = city
+                });
+
+                if (newAddressDto != null)
+                {
+                    var customerDto = _customerService.CreateCustomer(new CreateCustomerDto
+                    {
+                        FirstName = firstName,
+                        LastName = lastName,
+                        Email = email,
+                        RoleName = roleName,
+                        AddressId = newAddressDto.Id,
+                        Address = newAddressDto
+                    });
+
+                    if (customerDto != null)
+                    {
+                        Console.WriteLine($"Customer {firstName} {lastName} has been added with new address");
+                        PressToContinue();
+                    }
+                    else
+                    {
+                        Console.WriteLine("Something went wrong. Customer has not been added");
+                        PressToContinue();
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("Something went wrong. Address has not been added");
+                    PressToContinue();
+                }
             }
         }
         catch (Exception ex) { Debug.WriteLine("ERROR :: " + ex); }
@@ -271,7 +346,7 @@ public class MenuService
     {
         try
         {
-            ClearAndTitle("UPDATE CUSTOMER");
+            ClearAndTitle("Update Customer");
 
             DisplayCustomerIdAndName();
 
@@ -284,12 +359,10 @@ public class MenuService
                 if (customerEntity != null)
                 {
                     Console.WriteLine("\nSelected customer:");
-                    Console.WriteLine($"{customerEntity.Id}. Firstname: {customerEntity.FirstName}, Lastname: {customerEntity.LastName}, Email: {customerEntity.Email}, Street: {customerEntity.Address.Street}, PostalCode: {customerEntity.Address.PostalCode}, City: {customerEntity.Address.City}, Role: {customerEntity.Role.RoleName}");
-
-
+                    Console.WriteLine($"{customerEntity.Id}. Firstname: {customerEntity.FirstName}, Lastname: {customerEntity.LastName}, Email: {customerEntity.Email}");
 
                     Console.Write("\nEnter new email: ");
-                    var newEmailInput = Console.ReadLine()!.ToLower();
+                    var newEmailInput = Console.ReadLine()?.ToLower();
 
                     if (!string.IsNullOrWhiteSpace(newEmailInput))
                     {
@@ -307,7 +380,7 @@ public class MenuService
                     }
 
                     Console.Write("\nEnter new first name: ");
-                    var newFirstNameInput = Console.ReadLine()!.ToLower();
+                    var newFirstNameInput = Console.ReadLine()?.ToLower();
 
                     if (!string.IsNullOrWhiteSpace(newFirstNameInput))
                     {
@@ -315,7 +388,7 @@ public class MenuService
                     }
 
                     Console.Write("\nEnter new lastname: ");
-                    var newLastNameInput = Console.ReadLine()!.ToLower();
+                    var newLastNameInput = Console.ReadLine()?.ToLower();
 
                     if (!string.IsNullOrWhiteSpace(newLastNameInput))
                     {
@@ -325,42 +398,76 @@ public class MenuService
                     Console.Write("\nEnter new streetname: ");
                     var newStreetInput = Console.ReadLine();
 
-                    if (!string.IsNullOrWhiteSpace(newStreetInput))
-                    {
-                        customerEntity.Address.Street = newStreetInput;
-                    }
-
                     Console.Write("\nEnter new postalcode: ");
                     var newPostalCodeInput = Console.ReadLine();
-
-                    if (!string.IsNullOrWhiteSpace(newPostalCodeInput))
-                    {
-                        customerEntity.Address.PostalCode = newPostalCodeInput;
-                    }
 
                     Console.Write("\nEnter new city: ");
                     var newCityInput = Console.ReadLine();
 
-                    if (!string.IsNullOrWhiteSpace(newCityInput))
+                    if (!string.IsNullOrWhiteSpace(newStreetInput) || !string.IsNullOrWhiteSpace(newPostalCodeInput) || !string.IsNullOrWhiteSpace(newCityInput))
                     {
-                        customerEntity.Address.City = newCityInput;
+                        var existingAddress = _addressService.GetOneAddress(x => x.Street == newStreetInput && x.PostalCode == newPostalCodeInput && x.City == newCityInput);
+
+                        if (existingAddress != null)
+                        {
+                            customerEntity.Address = existingAddress;
+                        }
+                        else
+                        {
+                            var newAddress = new AddressEntity
+                            {
+                                Street = newStreetInput!,
+                                PostalCode = newPostalCodeInput!,
+                                City = newCityInput!
+                            };
+
+                            // kollar om den nya adressen redan finns i databasen
+                            var existingAddressEntity = _addressService.GetOneAddress(x => x.Street == newAddress.Street && x.PostalCode == newAddress.PostalCode && x.City == newAddress.City);
+
+                            if (existingAddressEntity != null)
+                            {
+                                customerEntity.Address = existingAddressEntity;
+                            }
+                            else
+                            {
+                                // gör en ny adress om den inte redan finns i databasen
+                                var createdAddressEntity = _addressService.CreateAddress(newAddress);
+                                if (createdAddressEntity != null)
+                                {
+                                    customerEntity.Address = createdAddressEntity;
+                                }
+                                else
+                                {
+                                    Console.WriteLine("Error creating new address. Customer was not updated.");
+                                    PressToContinue();
+                                    return;
+                                }
+                            }
+                        }
                     }
 
-                    if (customerEntity != null)
+                    // uppdaterar kunden
+                    var updatedCustomer = _customerService.UpdateCustomer(customerEntity);
+                    if (updatedCustomer != null)
                     {
                         Console.WriteLine("Customer was updated successfully");
-                        var newCustomer = _customerService.UpdateCustomer(customerEntity);
                     }
                     else
                     {
-                        Console.WriteLine("Something went wrong, try again!");
+                        Console.WriteLine("Error updating customer.");
                     }
                 }
-
+                else
+                {
+                    Console.WriteLine("Customer not found.");
+                }
                 PressToContinue();
             }
         }
-        catch (Exception ex) { Console.WriteLine("ERROR :: " + ex.Message); }
+        catch (Exception ex)
+        {
+            Console.WriteLine("ERROR :: " + ex.Message);
+        }
     }
 
 
@@ -404,6 +511,246 @@ public class MenuService
         return false;
     }
 
+
+
+    //<<<<<<<<<<<<<<<<<<<<<<<<<<Address>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+    public void AddressMenu()
+    {
+        try
+        {
+            ClearAndTitle("Address Menu");
+
+
+            Console.WriteLine("1. Create Address");
+            Console.WriteLine("2. Get One Address");
+            Console.WriteLine("3. Get All Addresses");
+            Console.WriteLine("4. Update Address");
+            Console.WriteLine("5. Delete Address");
+
+            Console.Write("Enter your option: ");
+            var option = Console.ReadLine();
+
+            switch(option)
+            {
+                case "1":
+                    CreateAddressMenu();
+                    break;
+
+                case "2":
+                    GetOneAddressMenu();
+                    break;
+
+                case "3":
+                    GetAllAddressesMenu();
+                    break;
+
+                case "4":
+                    UpdateAddressMenu();
+                    break;
+
+                case "5":
+                    DeleteSpecificAddressMenu();
+                    break;
+            }
+
+        }
+        catch (Exception ex) { Console.WriteLine("ERROR :: " + ex.Message); }
+    }
+    
+    public void CreateAddressMenu()
+    {
+        try
+        {
+            ClearAndTitle("CreateAddress");
+
+            Console.Write("Enter Street name: ");
+            var streetName = Console.ReadLine();
+
+            Console.Write("Enter postalcode: ");
+            var postalCode = Console.ReadLine();
+
+            Console.Write("Enter City: ");
+            var city = Console.ReadLine();
+
+            var existingAddress = _addressService.GetOneAddress(x => x.Street == streetName &&  x.PostalCode == postalCode && x.City == city);
+            if(existingAddress == null)
+            {
+                var addressEntity = new AddressEntity
+                {
+                    Street = streetName!,
+                    PostalCode = postalCode!,
+                    City = city!
+                };
+                if (addressEntity != null)
+                {
+                    _addressService.CreateAddress(addressEntity);
+                    Console.WriteLine("Address was created successfully");
+                }
+                else
+                {
+                    Console.WriteLine("Failed to create address");
+                }
+            }
+            else
+            {
+                Console.WriteLine("Address already exists");
+            }
+
+            PressToContinue();
+        }
+        catch (Exception ex) { Console.WriteLine("ERROR :: " + ex.Message); }
+    }
+
+    public void GetOneAddressMenu()
+    {
+        try
+        {
+            ClearAndTitle("Get One Address");
+
+            var addresses = _addressService.GetAllAddresses();
+            foreach(var address in addresses)
+            {
+                Console.WriteLine($"Id: {address.Id}. Street name: {address.Street}");
+                Console.WriteLine("______________________________________________________");
+            }
+            Console.Write("Enter id to view details: ");
+            var addressId = int.Parse(Console.ReadLine()!);
+
+            var addressEntity = _addressService.GetOneAddress(x => x.Id ==  addressId);
+
+            if(addressEntity != null)
+            {
+                Console.WriteLine($"Id: {addressEntity.Id}. Street name: {addressEntity.Street} Postal code: {addressEntity.PostalCode} City: {addressEntity.City}");
+            }
+            PressToContinue();
+        }
+        catch (Exception ex) { Console.WriteLine("ERROR :: " + ex.Message); }
+    }
+
+    public void GetAllAddressesMenu()
+    {
+        try
+        {
+            ClearAndTitle("Get All Addresses");
+
+            var addresses = _addressService.GetAllAddresses();
+            foreach( var address in addresses)
+            {
+                Console.WriteLine($"Id: {address.Id}. Street name: {address.Street} Postal code: {address.PostalCode} City: {address.City}");
+                Console.WriteLine("___________________________________________________________________");
+            }
+            PressToContinue();
+        }
+        catch (Exception ex) { Console.WriteLine("ERROR :: " + ex.Message); }
+    }
+
+    public void UpdateAddressMenu()
+    {
+        try
+        {
+            ClearAndTitle("Update Address");
+
+            var addressEntities = _addressService.GetAllAddresses();
+            foreach (var address in addressEntities)
+            {
+                Console.WriteLine($"Id: {address.Id}. Street name: {address.Street}, Postalcode: {address.PostalCode}, City: {address.City})");
+            }
+            Console.Write("\nEnter id for the address you want to update: ");
+            var addressId = int.Parse(Console.ReadLine()!);
+
+            var addressEntity = _addressService.GetOneAddress(x => x.Id == addressId);
+            if (addressEntity != null)
+            {
+                // Hämta kunderna kopplade till den valda adressen
+                var customersOnAddress = _customerService.GetAllCustomers().Where(x => x.Address.Id == addressId);
+
+
+                Console.WriteLine("Customers on specific address: ");
+                foreach (var customer in customersOnAddress)
+                {
+                    Console.WriteLine($"Id: {customer.Id}. Firstname: {customer.FirstName}, Lastname: {customer.LastName}, Email: {customer.Email}");
+                }
+
+                Console.Write("Enter customer´s id you want to update the address for: ");
+                var customerId = int.Parse(Console.ReadLine()!);
+
+                var customerEntity = _customerService.GetOneCustomer(x => x.Id == customerId && x.Address.Id == addressId);
+
+
+
+                if (customerEntity != null)
+                {
+                    Console.WriteLine("\nSelected customer:");
+                    Console.WriteLine($"{customerEntity.Id}. Firstname: {customerEntity.FirstName}, Lastname: {customerEntity.LastName}, Email: {customerEntity.Email}");
+
+                    Console.WriteLine("\nSelected address:");
+                    Console.WriteLine($"Id: {addressEntity.Id}. Street name: {addressEntity.Street}, Postalcode: {addressEntity.PostalCode}, City: {addressEntity.City})");
+
+                    Console.Write("\nEnter new street name: ");
+                    var newStreetInput = Console.ReadLine();
+                    if (string.IsNullOrEmpty(newStreetInput))
+                    {
+                        Console.WriteLine("You need to enter a streetname");
+                        PressToContinue();
+                        return;
+                    }
+
+                    Console.Write("\nEnter new postalcode: ");
+                    var newPostalCodeInput = Console.ReadLine();
+                    if (string.IsNullOrEmpty(newPostalCodeInput))
+                    {
+                        Console.WriteLine("You need to enter a postalcode");
+                        PressToContinue();
+                        return;
+                    }
+
+                    Console.Write("\nEnter new city: ");
+                    var newCityInput = Console.ReadLine();
+                    if (string.IsNullOrEmpty(newCityInput))
+                    {
+                        Console.WriteLine("You need to enter a city");
+                        PressToContinue();
+                        return;
+                    }
+
+                    // Kontrollera om den nya adressen redan finns i databasen
+                    var existingAddress = _addressService.GetOneAddress(x => x.Street == newStreetInput && x.PostalCode == newPostalCodeInput && x.City == newCityInput);
+
+                    if (existingAddress == null)
+                    {
+                        // Skapa ny address om den inte finns i db
+                        existingAddress = new AddressEntity
+                        {
+                            Street = newStreetInput!,
+                            PostalCode = newPostalCodeInput!,
+                            City = newCityInput!,
+                        };
+                    }
+
+                    // Uppdatera den valda kundens adress
+                    customerEntity.Address = existingAddress;
+                    _customerService.UpdateCustomer(customerEntity);
+
+                    Console.WriteLine("Address updated successfully");
+                }
+                else
+                {
+                    Console.WriteLine("Customer not found or not associated with the selected address.");
+                }
+            }
+            else
+            {
+                Console.WriteLine("Address not found.");
+            }
+
+            PressToContinue();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("ERROR :: " + ex.Message);
+        }
+    }
+
     public void DeleteSpecificAddressMenu()
     {
         try
@@ -443,6 +790,210 @@ public class MenuService
             else
             {
                 Console.WriteLine("Something went wrong, try again");
+            }
+            PressToContinue();
+        }
+        catch (Exception ex) { Console.WriteLine("ERROR :: " + ex.Message); }
+    }
+
+
+
+    //<<<<<<<<<<<<<<<<<<<<<<<ROLE>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+    public void RoleMenu()
+    {
+        try
+        {
+            ClearAndTitle("Role Menu");
+
+
+            Console.WriteLine("1. Create Role");
+            Console.WriteLine("2. Get One Role");
+            Console.WriteLine("3. Get All Roles");
+            Console.WriteLine("4. Update Role");
+            Console.WriteLine("5. Delete Role");
+
+            Console.Write("Enter your option: ");
+            var option = Console.ReadLine();
+
+            switch (option)
+            {
+                case "1":
+                    CreateRoleMenu();
+                    break;
+
+                case "2":
+                    GetOneRoleMenu();
+                    break;
+
+                case "3":
+                    GetAllRolesMenu();
+                    break;
+
+                case "4":
+                    UpdateRoleMenu();
+                    break;
+
+                case "5":
+                    DeleteSpecificRoleMenu();
+                    break;
+            }
+
+        }
+        catch (Exception ex) { Console.WriteLine("ERROR :: " + ex.Message); }
+    }
+
+    public void CreateRoleMenu()
+    {
+        try
+        {
+            ClearAndTitle("Create Role");
+
+            Console.Write("Enter Role name: ");
+            var roleName = Console.ReadLine()!.ToLower();
+
+            var existingRole = _roleService.GetOneRole(x => x.RoleName == roleName);
+
+            if(existingRole == null)
+            {
+                var roleEntity = _roleService.CreateRole(new RoleEntity
+                {
+                    RoleName = roleName!,
+                });
+
+                _roleService.CreateRole(roleEntity);
+                Console.WriteLine("A new role has been added!");
+            }
+            else
+            {
+                Console.WriteLine("Role already exists!");
+            }
+            PressToContinue();
+        }
+        catch (Exception ex) { Console.WriteLine("ERROR :: " + ex.Message); }
+    }
+
+    public void GetOneRoleMenu()
+    {
+        try
+        {
+            ClearAndTitle("Get One Role");
+
+            var roles = _roleService.GetAllRoles();
+            foreach(var role in roles )
+            {
+                Console.WriteLine($"{role.Id}. Role name: {role.RoleName}");
+                Console.WriteLine("______________________________________________________");
+            }
+            Console.Write("Enter id: ");
+            var roleId = int.Parse(Console.ReadLine()!);
+
+            var roleEntity = _roleService.GetOneRole(x => x.Id == roleId);
+            if(roleEntity != null)
+            {
+                Console.WriteLine($"RoleId: {roleEntity.Id}. Role name: {roleEntity.RoleName} ");
+
+                if(roleEntity.Customers.Any())
+                {
+                    Console.WriteLine("\nCustomers connected to role:");
+                    foreach(var customer in roleEntity.Customers)
+                    {
+                        Console.WriteLine($"customer id: {customer.Id}, Customer name: {customer.FirstName} {customer.LastName} Email: {customer.Email}");
+                        Console.WriteLine("______________________________________________________");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("No customers is currently in this role");
+                }
+            }
+            PressToContinue();
+        }
+        catch (Exception ex) { Console.WriteLine("ERROR :: " + ex.Message); }
+    }
+
+    public void GetAllRolesMenu()
+    {
+        try
+        {
+            ClearAndTitle("Get All Roles");
+
+            var roles = _roleService.GetAllRoles();
+            foreach( var role in roles)
+            {
+                Console.WriteLine($"RoleId: {role.Id}, RoleName: {role.RoleName}");
+                Console.WriteLine("______________________________________________________");
+            }
+            PressToContinue();
+        }
+        catch (Exception ex) { Console.WriteLine("ERROR :: " + ex.Message); }
+    }
+
+    public void UpdateRoleMenu()
+    {
+        try
+        {
+            ClearAndTitle("Update Role");
+
+            var roles = _roleService.GetAllRoles();
+            foreach(var role in roles)
+            {
+                Console.WriteLine($"RoleId: {role.Id}, RoleName: {role.RoleName}");
+                Console.WriteLine("______________________________________________________");
+            }
+            Console.Write("Enter id for the role you want to update: ");
+            var roleId = int.Parse(Console.ReadLine()!);
+
+            var roleEntity = _roleService.GetOneRole(x => x.Id == roleId);
+            if (roleEntity != null)
+            {
+                Console.WriteLine($"RoleId: {roleEntity.Id}. Role name: {roleEntity.RoleName} ");
+
+                if (roleEntity.Customers.Any())
+                {
+                    Console.WriteLine("\nCustomers connected to role:");
+                    foreach (var customer in roleEntity.Customers)
+                    {
+                        Console.WriteLine($"customer id: {customer.Id}, Customer name: {customer.FirstName} {customer.LastName} Email: {customer.Email}");
+                        Console.WriteLine("______________________________________________________");
+                    }
+                    Console.Write("Enter customer´s id you want to update role for: ");
+                    var customerId = int.Parse(Console.ReadLine()!);
+
+                    var customerEntity = _customerService.GetOneCustomer(x => x.Id == customerId);
+                    if (customerEntity != null)
+                    {
+                        Console.WriteLine("\nSelected customer:");
+                        Console.WriteLine($"Customer id: {customerEntity.Id}, customer name: {customerEntity.FirstName} {customerEntity.LastName}, Email: {customerEntity.Email}");
+
+                        Console.Write("\nEnter new Role name: ");
+                        var roleName = Console.ReadLine()!;
+                        if(string.IsNullOrEmpty(roleName) || string.IsNullOrWhiteSpace(roleName))
+                        {
+                            Console.WriteLine("You have to enter a role name");
+                            PressToContinue();
+                            return;
+                        }
+
+                        //kolla om uppdatederade rollen finns i databasen
+                        var existingRole = _roleService.GetOneRole(x => x.RoleName == roleName);
+                        if(existingRole == null)
+                        {
+                            //skapa ny roll
+                            existingRole = new RoleEntity
+                            {
+                                RoleName = roleName!
+                            };
+                        }
+                        //uppdatera kundens rollnamn
+                        customerEntity.Role = existingRole;
+                        _customerService.UpdateCustomer(customerEntity);
+                        Console.WriteLine("Updated successfully!");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("No customers is currently in this role");
+                }
             }
             PressToContinue();
         }
@@ -495,9 +1046,6 @@ public class MenuService
     }
 
 
-
-
-
     private void DisplayCustomerIdAndName()
     {
         var customerEntity = _customerService.GetAllCustomers();
@@ -525,14 +1073,6 @@ public class MenuService
         Console.WriteLine("\nPress any key to continue");
         Console.ReadKey();
     }
-
-
-
-
-
-
-
-
 
 
 
@@ -579,14 +1119,6 @@ public class MenuService
                     DeleteProductMenu();
                     break;
 
-                case "6":
-                    DeleteSpecificCategoryMenu();
-                    break;
-
-                case "7":
-                    DeleteSpecificManufactureMenu();
-                    break;
-
                 case "9":
                     StartMenu();
                     break;
@@ -608,6 +1140,14 @@ public class MenuService
 
             Console.Write("Enter productname: ");
             var productName = Console.ReadLine()!.ToLower();
+            // Kontrollera om produkten redan finns i databasen
+            var existingProduct = _productService.GetOneProduct(x => x.ProductName == productName);
+            if (existingProduct != null)
+            {
+                Console.WriteLine("Product already exists.");
+                PressToContinue();
+                return;
+            }
 
 
             Console.Write("Enter product price: ");
@@ -652,10 +1192,10 @@ public class MenuService
         catch (Exception ex) { Console.WriteLine("ERROR :: " + ex.Message); }
     }
 
-
     public void GetOneProductMenu()
     {
-        ClearAndTitle("GET ONE PRODUCT");
+
+        ClearAndTitle("Get One Product");
 
         DisplayProductIdAndName();
         Console.Write("Enter id to see details: ");
@@ -680,7 +1220,6 @@ public class MenuService
             Console.Write("Invalid input");
         }
     }
-
 
     public void GetAllProductsMenu()
     {
@@ -709,105 +1248,74 @@ public class MenuService
         catch (Exception ex) { Console.WriteLine("ERROR :: " + ex.Message); }
     }
 
-
     public void UpdateProductMenu()
     {
         try
         {
-            ClearAndTitle("UPDATE PRODUCT");
+            ClearAndTitle("Update Category");
 
-            DisplayProductIdAndName();
-
-            Console.Write("Enter Id to update product: ");
-            var productId = Console.ReadLine();
-
-            if (int.TryParse(productId, out int inputId))
+            var categories = _categoryService.GetAllCategories();
+            foreach (var category in categories)
             {
-                var productEntity = _productService.GetOneProduct(x => x.Id == inputId);
-                if (productEntity != null)
+                Console.WriteLine($"Category id: {category.Id} Category name: {category.CategoryName}");
+                Console.WriteLine("______________________________________________________");
+            }
+
+            Console.Write("Enter id for the category you want to update: ");
+            var categoryId = int.Parse( Console.ReadLine()!);
+
+            var categoryEntity = _categoryService.GetOneCategory(x => x.Id == categoryId);
+            if(categoryEntity != null)
+            {
+                Console.WriteLine($"Selected Category: \nCategory id: {categoryEntity.Id} Category name: {categoryEntity.CategoryName}");
+
+                if(categoryEntity.Products.Any())
                 {
-                    Console.WriteLine("Selected product:");
-                    Console.WriteLine($"Id: {productEntity.Id}, Productname: {productEntity.ProductName}, Price: {productEntity.ProductPrice}, Category: {productEntity.Category.CategoryName}, Manufacture: {productEntity.Manufacture.ManufactureName}, Ingress: {productEntity.Description.Ingress}, Description text: {productEntity.Description.DescriptionText}");
-
-                    Console.WriteLine("\nLeave empty if you dont want to change\n");
-                    Console.Write("Enter new productname: ");
-                    var newProductNameInput = Console.ReadLine()!.ToLower();
-                    if (!string.IsNullOrWhiteSpace(newProductNameInput))
+                    Console.WriteLine("\nProducts connected to category: ");
+                    foreach(var product in categoryEntity.Products)
                     {
-                        productEntity.ProductName = newProductNameInput;
+                        Console.WriteLine($"Product id: {product.Id}, product name: {product.ProductName} price: {product.ProductPrice}");
+                        Console.WriteLine("______________________________________________________");
                     }
+                    Console.Write("Enter product´s id to update category for specific product: ");
+                    var productId = int.Parse( Console.ReadLine()!);
 
-                    Console.Write("Enter new price: ");
-                    var newProductPriceInput = Console.ReadLine();
-                    if (decimal.TryParse(newProductPriceInput, out var newProductPrice))
+                    var productEntity = _productService.GetOneProduct(x => x.Id == productId);
+                    if(productEntity != null)
                     {
-                        productEntity.ProductPrice = newProductPrice;
-                    }
-                    else
-                    {
-                        Console.WriteLine("Wrong format! Price has not been changed");
-                    }
+                        Console.WriteLine("Selected product: ");
+                        Console.WriteLine($"Product id: {productEntity.Id}. Product name: {productEntity.ProductName}, price: {productEntity.ProductPrice}, ((category: {productEntity.Category.CategoryName}))");
 
-                    Console.Write("Enter new Category: ");
-                    var newCategoryNameInput = Console.ReadLine()!.ToLower();
-                    if (!string.IsNullOrWhiteSpace(newCategoryNameInput))
-                    {
-                        // Kontrollera om kategorin redan finns
-                        var existingCategory = _categoryService.GetOneCategory(x => x.CategoryName == newCategoryNameInput);
+                        Console.Write("Enter new Category name: ");
+                        var newCategoryName = Console.ReadLine()!;
 
+                        if(string.IsNullOrWhiteSpace(newCategoryName))
+                        {
+                            Console.WriteLine("You have to enter a category name");
+                            PressToContinue();
+                            return;
+                        }
+
+                        var existingCategory = _categoryService.GetOneCategory(x => x.CategoryName == newCategoryName);
                         if (existingCategory == null)
                         {
-                            // Om kategorin inte finns, skapa en ny kategori
-                            var newCategory = new Category { CategoryName = newCategoryNameInput };
-                            existingCategory = _categoryService.CreateCategory(newCategory);
+                            existingCategory = new Category { CategoryName = newCategoryName };
                         }
-
-                        // Uppdatera produktens kategori
                         productEntity.Category = existingCategory;
+                        _productService.UpdateProduct(productEntity);
+                        Console.WriteLine("Updated successfully");
                     }
-
-                    Console.Write("Enter new Manufacture: ");
-                    var newManufactureNameInput = Console.ReadLine()!.ToLower();
-                    if (!string.IsNullOrWhiteSpace(newManufactureNameInput))
-                    {
-                        productEntity.Manufacture.ManufactureName = newManufactureNameInput;
-                    }
-
-                    Console.Write("Enter new Ingress: ");
-                    var newIngressInput = Console.ReadLine()!.ToLower();
-                    if (!string.IsNullOrWhiteSpace(newIngressInput))
-                    {
-                        productEntity.Description.Ingress = newIngressInput;
-                    }
-
-                    Console.Write("Enter new Description: ");
-                    var newDescriptionTextInput = Console.ReadLine()!.ToLower();
-                    if (!string.IsNullOrWhiteSpace(newDescriptionTextInput))
-                    {
-                        productEntity.Description.DescriptionText = newDescriptionTextInput;
-                    }
-
-                    if (productEntity != null)
-                    {
-                        var result = _productService.UpdateProduct(productEntity);
-                        if (result != null)
-                        {
-                            Console.WriteLine("Product has successfully been updated");
-                        }
-                        else
-                        {
-                            Console.WriteLine("Something went wrong, product has not been updated");
-                        }
-                    }
-
                 }
-
+                else
+                {
+                    Console.WriteLine("Failed to update");
+                }
+                PressToContinue();
             }
             PressToContinue();
         }
         catch (Exception ex) { Console.WriteLine("ERROR :: " + ex.Message); }
     }
-
 
     public void DeleteProductMenu()
     {
@@ -848,8 +1356,216 @@ public class MenuService
 
 
 
+    //<<<<<<<<<<<<<<<<<<<<<<<<<<<<Category>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+    public void CategoryMenu()
+    {
+        try
+        {
+            ClearAndTitle("Category Menu");
 
-    public void DeleteSpecificCategoryMenu()
+            Console.WriteLine("1. Create Category");
+            Console.WriteLine("2. Get One Category");
+            Console.WriteLine("3. Get All Categories");
+            Console.WriteLine("4. Update Category");
+            Console.WriteLine("5. Delete Category");
+
+
+            Console.WriteLine("\n9. Back to stat menu");
+            Console.Write("\n Enter your choice: ");
+            var option = Console.ReadLine();
+
+            switch (option)
+            {
+                case "1":
+                    CreateCategoryMenu();
+                    break;
+                case "2":
+                    GetOneCategoryMenu();
+                    break;
+
+                case "3":
+                    GetAllCategoriesMenu();
+                    break;
+
+                case "4":
+                    UpdateCategoryMenu();
+                    break;
+
+                case "5":
+                    DeleteCategoryMenu();
+                    break;
+
+
+
+                case "9":
+                    StartMenu();
+                    break;
+
+                default:
+                    Console.WriteLine("Invalid option");
+                    PressToContinue();
+                    break;
+            }
+        }
+        catch (Exception ex) { Console.WriteLine("ERROR :: " + ex.Message); }
+    }
+
+    public void CreateCategoryMenu()
+    {
+        try
+        {
+            ClearAndTitle("Create Category");
+
+            Console.Write("Enter category name: ");
+            var categoryName = Console.ReadLine()!.ToLower();
+            // Kontrollera om kategorin redan finns i databasen
+            var existingCategory = _categoryService.GetOneCategory(x => x.CategoryName == categoryName);
+            if (existingCategory != null)
+            {
+                Console.WriteLine("Category already exists.");
+                PressToContinue();
+                return;
+            }
+
+            var newCategoryName = _categoryService.CreateCategory(new Category { CategoryName = categoryName });
+            if(newCategoryName != null)
+            {
+                Console.WriteLine($"Category: {newCategoryName.CategoryName} has been added");
+                PressToContinue();
+            }
+            else
+            {
+                Console.WriteLine("Something went wrond, category has not been added");
+            }
+            PressToContinue();
+        }
+        catch (Exception ex) { Console.WriteLine("ERROR :: " + ex.Message); }
+    }
+    public void GetOneCategoryMenu()
+    {
+        try
+        {
+            ClearAndTitle("Get One Category");
+
+            var categories = _categoryService.GetAllCategories();
+            foreach(var category in categories)
+            {
+                Console.WriteLine($"Category id: {category.Id}. Category name: {category.CategoryName}");
+            }
+
+            Console.Write("Enter id to see details: ");
+            var categoryId = Console.ReadLine();
+
+            if (int.TryParse(categoryId, out int inputId))
+            {
+                var selectedCategory = _categoryService.GetOneCategory(x => x.Id == inputId);
+                if (selectedCategory != null)
+                {
+                    Console.WriteLine($"Id: {selectedCategory.Id}, Category name: {selectedCategory.CategoryName}");
+                    Console.WriteLine($"Products conneted to the category: ");
+                    foreach(var product in selectedCategory.Products)
+                    {
+                        Console.WriteLine($"Product id: {product.Id}, ProductName: {product.ProductName}, Price: {product.ProductPrice}");
+                    }
+
+                    PressToContinue();
+                }
+                else
+                {
+                    Console.WriteLine("No product was found!");
+                }
+            }
+            else
+            {
+                Console.Write("Invalid input");
+            }
+        }
+        catch (Exception ex) { Console.WriteLine("ERROR :: " + ex.Message); }
+    }
+    public void GetAllCategoriesMenu()
+    {
+        try
+        {
+            ClearAndTitle("Get All Categories");
+
+            var categories = _categoryService.GetAllCategories();
+            foreach(var category in categories)
+            {
+                Console.WriteLine($"Category id: {category.Id}. Category name: {category.CategoryName}");
+                Console.WriteLine("_____________________________________________________");
+            }
+            PressToContinue();
+        }
+        catch (Exception ex) { Console.WriteLine("ERROR :: " + ex.Message); }
+    }
+    public void UpdateCategoryMenu()
+    {
+        try
+        {
+            ClearAndTitle("Update Category");
+
+            var categories = _categoryService.GetAllCategories();
+            foreach (var category in categories)
+            {
+                Console.WriteLine($"Category id: {category.Id}, Category name: {category.CategoryName}");
+                Console.WriteLine("______________________________________________________");
+            }
+
+            Console.WriteLine("Enter id for the category you want to update: ");
+            var categoryId = int.Parse(Console.ReadLine()!);
+
+            var categoryEntity = _categoryService.GetOneCategory(x => x.Id == categoryId);
+            if(categoryEntity != null)
+            {
+                Console.WriteLine($"Category id: {categoryEntity.Id}, Category name: {categoryEntity.CategoryName}");
+
+                if(!categoryEntity.Products.Any())
+                {
+                    Console.WriteLine("No products is currently in the category");
+                }
+                else
+                {
+                    Console.WriteLine($"\n Products associated with category:");
+                    foreach(var product in categoryEntity.Products)
+                    {
+                        Console.WriteLine($"Product id: {product.Id}. Product name: {product.ProductName}, price: {product.ProductPrice}");
+                        Console.WriteLine("______________________________________________________");
+                    }
+
+                    Console.WriteLine("Enter product´s id you want to update category for: ");
+                    var productId = int.Parse(Console.ReadLine()!);
+
+                    var productEntity = _productService.GetOneProduct(x => x.Id == productId);
+                    if(productEntity != null)
+                    {
+                        Console.WriteLine("Selected product:");
+                        Console.WriteLine($"Product id: {productEntity.Id}. Product name: {productEntity.ProductName}, price: {productEntity.ProductPrice}");
+
+                        Console.Write("\nEnter category name: ");
+                        var categoryName = Console.ReadLine();
+                        if(string.IsNullOrWhiteSpace(categoryName))
+                        {
+                            Console.WriteLine("You have to enter a category name");
+                            PressToContinue();
+                            return;
+                        }
+                        var existingCategory = _categoryService.GetOneCategory(x => x.CategoryName == categoryName);
+                        if (existingCategory == null)
+                        {
+                            existingCategory = new Category { CategoryName = categoryName };
+                        }
+
+                        productEntity.Category = existingCategory;
+                        _productService.UpdateProduct(productEntity);
+                        Console.WriteLine("Updated successfully!");
+                    }
+                }
+            }
+            PressToContinue();
+        }
+        catch(Exception ex) { Console.WriteLine("ERROR :: "+ ex.Message); }
+    }
+    public void DeleteCategoryMenu()
     {
         try
         {
@@ -896,7 +1612,216 @@ public class MenuService
         catch (Exception ex) { Console.WriteLine("ERROR :: " + ex.Message); }
     }
 
-    public void DeleteSpecificManufactureMenu()
+
+
+    //<<<<<<<<<<<<<<<<<<<<<<<<<<<<Manufacture>>>>>>>>>>>>>>>>>>>>>>>>>>>
+    public void ManufactureMenu()
+    {
+        try
+        {
+            ClearAndTitle("Manufacturer Menu");
+
+            Console.WriteLine("1. Create Manufacture");
+            Console.WriteLine("2. Get One Manufacture");
+            Console.WriteLine("3. Get All Manufacturer");
+            Console.WriteLine("4. Update Manufacture");
+            Console.WriteLine("5. Delete Manufacture");
+
+
+            Console.WriteLine("\n9. Back to stat menu");
+            Console.Write("\n Enter your choice: ");
+            var option = Console.ReadLine();
+
+            switch (option)
+            {
+                case "1":
+                    CreateManufactureMenu();
+                    break;
+                case "2":
+                    GetOneManufactureMenu();
+                    break;
+
+                case "3":
+                    GetAllManufacturersMenu();
+                    break;
+
+                case "4":
+                    UpdateManufactureMenu();
+                    break;
+
+                case "5":
+                    DeleteManufactureMenu();
+                    break;
+
+
+
+                case "9":
+                    StartMenu();
+                    break;
+
+                default:
+                    Console.WriteLine("Invalid option");
+                    PressToContinue();
+                    break;
+            }
+        }
+        catch (Exception ex) { Console.WriteLine("ERROR :: " + ex.Message); }
+    }
+
+    public void CreateManufactureMenu()
+    {
+        try
+        {
+            ClearAndTitle("Create Manufacturer");
+
+            Console.Write("Enter Manufacture name: ");
+            var manufactureName = Console.ReadLine()!.ToLower();
+
+            //kolla om tillverkaren redan finns i databasen
+            var existingManufacture = _manufactureService.GetOneManufacture(x => x.ManufactureName == manufactureName);
+            if(existingManufacture != null)
+            {
+                Console.WriteLine($"Manufacturer already exists.");
+                PressToContinue();
+                return;
+            }
+
+            var newManufactureName = _manufactureService.CreateManufacture(new Manufacture { ManufactureName = manufactureName });
+            if(newManufactureName != null)
+            {
+                Console.WriteLine($"Manufacturer {newManufactureName.ManufactureName} has been added!");
+            }
+            else
+            {
+                Console.WriteLine("Something went wrong, manufacturer has not been added");
+            }
+            PressToContinue();
+        }
+        catch (Exception ex) { Console.WriteLine("ERROR :: " + ex.Message); }
+    }
+
+    public void GetOneManufactureMenu()
+    {
+        try
+        {
+            ClearAndTitle("Get One Manufacture");
+
+            var manufacturers = _manufactureService.GetAllManufactures();
+            foreach( var manufacture in manufacturers )
+            {
+                Console.WriteLine($"Manufacture id: {manufacture.Id}. Manufacture name: {manufacture.ManufactureName}");
+            }
+            Console.Write("Enter id to se details: ");
+            var manufactureId = int.Parse(Console.ReadLine()!);
+            var selectedManufacture = _manufactureService.GetOneManufacture(x => x.Id == manufactureId);
+            if(selectedManufacture != null)
+            {
+                Console.WriteLine($"\nManufacture id: {selectedManufacture.Id}. Manufacture name: {selectedManufacture.ManufactureName}");
+                Console.WriteLine("Products connected to the manufacturer:");
+                foreach(var product in selectedManufacture.Products)
+                {
+                    Console.WriteLine($"Product id: {product.Id}. Product name: {product.ProductName}, price: {product.ProductPrice}");
+                }
+                PressToContinue();
+            }
+            else
+            {
+                Console.WriteLine("No product was found");
+            }
+
+        }
+        catch (Exception ex) { Console.WriteLine("ERROR :: " + ex.Message); }
+    }
+
+    public void GetAllManufacturersMenu()
+    {
+        try
+        {
+            ClearAndTitle("Get All Manufacturers");
+
+            var manufacturers = _manufactureService.GetAllManufactures();
+            foreach(var manufacture in manufacturers )
+            {
+                Console.WriteLine($"Manufacture id: {manufacture.Id}. Manufacture name: {manufacture.ManufactureName}");
+                Console.WriteLine("_____________________________________________________");
+            }
+            PressToContinue();
+        }
+        catch (Exception ex) { Console.WriteLine("ERROR :: " + ex.Message); }
+    }
+
+    public void UpdateManufactureMenu()
+    {
+        try
+        {
+            ClearAndTitle("Update Manufacture");
+
+            var manufacturers = _manufactureService.GetAllManufactures();
+            foreach (var manufacture in manufacturers)
+            {
+                Console.WriteLine($"Manufacture id: {manufacture.Id}, Manufacture name: {manufacture.ManufactureName}");
+                Console.WriteLine("______________________________________________________");
+            }
+            Console.WriteLine("Enter id for the manufacture you want to update: ");
+            var manufactureId = int.Parse(Console.ReadLine()!);
+
+            var manufactureEntity = _manufactureService.GetOneManufacture(x => x.Id == manufactureId);
+            if (manufactureEntity != null)
+            {
+                Console.WriteLine($"Manufacture id: {manufactureEntity.Id}, RoleName: {manufactureEntity.ManufactureName}");
+
+                if (!manufactureEntity.Products.Any())
+                {
+                    Console.WriteLine("No Products is currently in this manufacturer");
+                }
+                else
+                {
+                    Console.WriteLine("\n Products associated with manufacturers:");
+                    foreach (var product in manufactureEntity.Products)
+                    {
+                        Console.WriteLine($"Product id: {product.Id}. Product name: {product.ProductName}, price: {product.ProductPrice}");
+                        Console.WriteLine("______________________________________________________");
+                    }
+                    Console.WriteLine("Enter product´s id you want to update manufacturer for: ");
+                    var productId = int.Parse(Console.ReadLine()!);
+
+                    var productEntity = _productService.GetOneProduct(x => x.Id == productId);
+                    if (productEntity != null)
+                    {
+                        Console.WriteLine("Selected product:");
+                        Console.WriteLine($"Product id: {productEntity.Id}. Product name: {productEntity.ProductName}, price: {productEntity.ProductPrice}");
+
+                        Console.WriteLine("Enter manufacture name: ");
+                        var manufactureName = Console.ReadLine();
+                        if (string.IsNullOrWhiteSpace(manufactureName))
+                        {
+                            Console.WriteLine("You have to enter a role name");
+                            PressToContinue();
+                            return;
+                        }
+
+                        var existingManufacture = _manufactureService.GetOneManufacture(x => x.ManufactureName == manufactureName);
+                        if (existingManufacture == null)
+                        {
+                            existingManufacture = new Manufacture { ManufactureName = manufactureName };
+                        }
+
+                        productEntity.Manufacture = existingManufacture;
+                        _productService.UpdateProduct(productEntity);
+                        Console.WriteLine("Updated successfully!");
+                    }
+                }
+            }
+
+            PressToContinue();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("ERROR :: " + ex.Message);
+        }
+    }
+
+    public void DeleteManufactureMenu()
     {
         try
         {
@@ -942,6 +1867,7 @@ public class MenuService
         }
         catch (Exception ex) { Console.WriteLine("ERROR :: " + ex.Message); }
     }
+
 
 
     private void DisplayProductIdAndName()
@@ -1076,7 +2002,6 @@ public class MenuService
         catch(Exception ex) { Console.WriteLine("ERROR :: " + ex.Message); }
     }
 
-    //eventuellt fixa
     public void GetOneOrderMenu()
     {
         try
@@ -1121,24 +2046,49 @@ public class MenuService
             var allOrders = _orderRowService.GetOrdersWithSameId();
 
             Console.Write("Enter id for the order you want to update: ");
-            var orderRowId = int.Parse(Console.ReadLine()!);
+            var orderId = int.Parse(Console.ReadLine()!);
 
-            if(allOrders.Any())
+            if (allOrders.Any())
             {
-                foreach (var orderRow in allOrders)
+                var orderRows = allOrders.Where(o => o.OrderId == orderId).ToList();
+                if (orderRows.Any())
                 {
-                    Console.WriteLine($"Id: {orderRow.Id}, {orderRow.Product.ProductName}");
-                }
-                Console.Write("Enter id for the order you want to update: ");
-                var orderId = int.Parse(Console.ReadLine()!);
-                if(allOrders.Any())
-                {
-                    var getOneOrderRow = _orderRowService.GetOneOrderRow(x => x.Id == orderId);
-                    if(getOneOrderRow != null)
+                    Console.WriteLine($"Products in Order id {orderId}:");
+                    foreach (var orderRow in orderRows)
+                    {
+                        Console.WriteLine($"Order Row id: {orderRow.Id}, ProductName: {orderRow.Product.ProductName}, Quantity: {orderRow.Quantity}");
+                    }
+
+                    Console.WriteLine("Enter Order Row id for the product you want to update: ");
+                    var orderRowId = int.Parse(Console.ReadLine()!);
+
+                    var getOneOrderRow = orderRows.FirstOrDefault(o => o.Id == orderRowId);
+                    if (getOneOrderRow != null)
                     {
                         Console.WriteLine($"Selected orderrow: ");
-                        Console.WriteLine($"Id: { getOneOrderRow.Id}, ProductName: { getOneOrderRow.Product.ProductName} Quantity: {getOneOrderRow.Quantity}");
+                        Console.WriteLine($"Order Row id: {getOneOrderRow.Id}, ProductName: {getOneOrderRow.Product.ProductName}, Quantity: {getOneOrderRow.Quantity}");
 
+                        Console.WriteLine("Do you want to change product? (y/n)");
+                        var changeProduct = Console.ReadLine()!.ToLower();
+                        if (changeProduct.Equals("y"))
+                        {
+                            var products = _productService.GetAllProducts();
+                            foreach (var product in products)
+                            {
+                                Console.WriteLine($"product id: {product.Id}. Product name: {product.ProductName}");
+                            }
+                            Console.Write("Enter product id to change current product: ");
+                            var productId = int.Parse(Console.ReadLine()!);
+
+                            var productEntity = _productService.GetOneProduct(x => x.Id == productId);
+                            if (productEntity != null)
+                            {
+                                // Uppdatera den befintliga orderpostens produkt med den nya produkten
+                                getOneOrderRow.ProductId = productEntity.Id;
+
+                                Console.WriteLine($"New orderrow productname: {productEntity.ProductName}");
+                            }
+                        }
                         Console.WriteLine("\nLeave empty if you dont want to change\n");
                         Console.Write("Enter new quantity: ");
                         var newQuantityInput = int.Parse(Console.ReadLine()!);
@@ -1147,35 +2097,25 @@ public class MenuService
                             getOneOrderRow.Quantity = newQuantityInput;
                         }
 
-
-                        Console.Write("Update product ");
-                        Console.WriteLine("\nProduct list: ");
-                        var products = _productService.GetAllProducts();
-                        foreach(var product in products)
-                        {
-                            Console.WriteLine($"Id: {product.Id}, productname: {product.ProductName}");
-                        }
-                        Console.Write($"\nEnter id for product you want to chage to: ");
-                        var newProductId = int.Parse(Console.ReadLine()!);
-                        var newProduct = _productService.GetOneProduct(x => x.Id == newProductId);
-
-                        if(newProduct != null)
-                        {
-                            getOneOrderRow.Product = newProduct;
-                            _orderRowService.UpdateOrderRow(getOneOrderRow);
-                            Console.WriteLine($"Changed product to {getOneOrderRow.Product.ProductName} successfully.");
-                        }
-                        else
-                        {
-                            Console.WriteLine("Something went wrong, try again!");
-                        }
-
+                        _orderRowService.UpdateOrderRow(getOneOrderRow);
+                        Console.WriteLine("Order row updated successfully");
                     }
+                    else
+                    {
+                        Console.WriteLine("Invalid Order Row id.");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine($"No products found for Order id {orderId}.");
                 }
             }
             PressToContinue();
         }
-        catch (Exception ex) { Console.WriteLine("ERROR :: " + ex.Message); }
+        catch (Exception ex)
+        {
+            Console.WriteLine("ERROR :: " + ex.Message);
+        }
     }
 
 
@@ -1251,7 +2191,6 @@ public class MenuService
         catch (Exception ex) { Console.WriteLine("ERROR :: " + ex.Message); }
     }
 
-
     public void CreateReview()
     {
         try
@@ -1279,6 +2218,7 @@ public class MenuService
                     };
 
                     _reviewService.CreateReview(reviewEntity);
+                    Console.WriteLine("Review was created successfully");
                 }
                 else
                 {
@@ -1394,7 +2334,6 @@ public class MenuService
         }
         catch (Exception ex) { Console.WriteLine("ERROR :: " + ex.Message); }
     }
-
 
     public void DeleteReview()
     {

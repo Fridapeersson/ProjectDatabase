@@ -18,6 +18,11 @@ public class CustomerService
         _roleService = roleService;
     }
 
+    /// <summary>
+    ///     Creates a new Customer in databse
+    /// </summary>
+    /// <param name="customerDto">the data transfer object containing the customer information</param>
+    /// <returns>The created Customer entity, or null if the customer already exists.</returns>
     public CustomerEntity CreateCustomer(CreateCustomerDto customerDto)
     {
         try
@@ -25,7 +30,7 @@ public class CustomerService
             if (!_customerRepository.Exists(x => x.Email == customerDto.Email))
             {
                 var roleEntity = _roleService.GetOneRole(x => x.RoleName == customerDto.RoleName);
-                var addressEntity = _addressService.GetOneAddress(x => x.Id == customerDto.Id);
+                var addressEntity = _addressService.GetOneAddress(x => x.Id == customerDto.Address.Id);
 
                 if(roleEntity == null)
                 {
@@ -64,6 +69,10 @@ public class CustomerService
         return null!;
     }
 
+    /// <summary>
+    ///     Gets all customers from database
+    /// </summary>
+    /// <returns>A collection of all customers</returns>
     public IEnumerable<CustomerEntity> GetAllCustomers()
     {
         try
@@ -83,6 +92,11 @@ public class CustomerService
         return null!;
     }
 
+    /// <summary>
+    ///     Gets one customer from database based on the provided predicate/expression
+    /// </summary>
+    /// <param name="predicate">the predicate/expression used to filter the customer</param>
+    /// <returns>the customer that matches the predicate/expression, else null</returns>
     public CustomerEntity GetOneCustomer(Expression<Func<CustomerEntity, bool>> predicate)
     {
         try
@@ -98,6 +112,11 @@ public class CustomerService
         return null!;
     }
 
+    /// <summary>
+    ///     Updates a customer in database
+    /// </summary>
+    /// <param name="entity">The updated customer entity</param>
+    /// <returns>the updated customer entity</returns>
     public CustomerEntity UpdateCustomer(CustomerEntity entity)
     {
         try
@@ -112,7 +131,11 @@ public class CustomerService
         return null!;
     }
 
-
+    /// <summary>
+    ///     Deletes a customer entity from database based on the provided predicate/expression
+    /// </summary>
+    /// <param name="predicate">the predicate/expression used to filter the customer to delete</param>
+    /// <returns>True if deleted successfully, else false</returns>
     public bool DeleteCustomer(Expression<Func<CustomerEntity, bool>> predicate)
     {
         try

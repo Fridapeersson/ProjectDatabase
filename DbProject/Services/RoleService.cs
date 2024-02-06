@@ -21,14 +21,14 @@ public class RoleService
     {
         try
         {
-            //if(!_roleRepository.Exists(x => x.RoleName == entity.RoleName))
-            //{
+            if (!_roleRepository.Exists(x => x.RoleName == entity.RoleName))
+            {
                 var roleEntity = _roleRepository.Create(new RoleEntity
                 {
                     RoleName = entity.RoleName,
                 });
             return roleEntity;
-            //}
+            }
         }
         catch (Exception ex) { Console.WriteLine("ERROR :: " + ex.Message); }
         return null!;
