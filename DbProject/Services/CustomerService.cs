@@ -143,8 +143,12 @@ public class CustomerService
             var customerEntity = _customerRepository.GetOne(predicate);
             if(customerEntity != null)
             {
-                _customerRepository.Delete(x => x.Id ==  customerEntity.Id);
+                var result = _customerRepository.Delete(x => x.Id ==  customerEntity.Id);
+                if (result)
+                {
+
                 return true;
+                }
             }
         }
         catch (Exception ex) { Console.WriteLine("ERROR :: " + ex.Message); }

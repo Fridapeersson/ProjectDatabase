@@ -116,6 +116,8 @@ public class MenuService
         }
     }
 
+
+    //<<<<<<<<<<<<<<<<<CUSTOMERS>>>>>>>>>>>>>>>>>>>>>
     public void CustomerMenu()
     {
         while (true)
@@ -127,9 +129,6 @@ public class MenuService
             Console.WriteLine("3. Get All Customer");
             Console.WriteLine("4. Update Customer");
             Console.WriteLine("5. Delete Customer");
-            Console.WriteLine("6. Delete Address");
-            Console.WriteLine("7. Delete Role");
-
 
             Console.WriteLine("9. Back to main menu");
             Console.Write("\n Enter your choice:");
@@ -155,14 +154,6 @@ public class MenuService
                 case "5":
                     DeleteCustomerMenu();
                     break;
-
-                //case "6":
-                //    DeleteSpecificAddressMenu();
-                //    break;
-
-                //case "7":
-                //    DeleteSpecificRoleMenu();
-                //    break;
 
                 case "9":
                     StartMenu();

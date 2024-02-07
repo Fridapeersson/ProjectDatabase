@@ -3,9 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.8.34511.84
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DbProject", "DbProject\DbProject.csproj", "{F2E0F28D-BECF-426D-9D43-771FF60B05A6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DbProject", "DbProject\DbProject.csproj", "{F2E0F28D-BECF-426D-9D43-771FF60B05A6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleApp", "ConsoleApp\ConsoleApp.csproj", "{B64B5BD8-08F8-486A-865F-D054F8F7231A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsoleApp", "ConsoleApp\ConsoleApp.csproj", "{B64B5BD8-08F8-486A-865F-D054F8F7231A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DbProject.Tests", "DbProject.Tests\DbProject.Tests.csproj", "{178CE34E-A9C8-4609-B924-76A330E804C5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{B64B5BD8-08F8-486A-865F-D054F8F7231A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B64B5BD8-08F8-486A-865F-D054F8F7231A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B64B5BD8-08F8-486A-865F-D054F8F7231A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{178CE34E-A9C8-4609-B924-76A330E804C5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{178CE34E-A9C8-4609-B924-76A330E804C5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{178CE34E-A9C8-4609-B924-76A330E804C5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{178CE34E-A9C8-4609-B924-76A330E804C5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

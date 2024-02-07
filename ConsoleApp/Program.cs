@@ -16,41 +16,40 @@ var productCatalogConnectionstring = @"Data Source=(LocalDB)\MSSQLLocalDB;Attach
 var builder = Host.CreateDefaultBuilder().ConfigureServices(services =>
 {
     services.AddDbContext<CustomerDbContext>(x => x.UseSqlServer(customerDbConnectionstring));
-
     services.AddDbContext<ProductCatalogContext>(x => x.UseSqlServer(productCatalogConnectionstring));
 
 
     //Customer
-    services.AddSingleton<AddressRepository>();
-    services.AddSingleton<CustomerRepository>();
-    services.AddSingleton<RoleRepository>();
+    services.AddScoped<AddressRepository>();
+    services.AddScoped<CustomerRepository>();
+    services.AddScoped<RoleRepository>();
 
-    services.AddSingleton<AddressService>();
-    services.AddSingleton<CustomerService>();
-    services.AddSingleton<RoleService>();
+    services.AddScoped<AddressService>();
+    services.AddScoped<CustomerService>();
+    services.AddScoped<RoleService>();
 
 
     //Products
-    services.AddSingleton<CategoryRepository>();
-    services.AddSingleton<DescriptionRepository>();
-    services.AddSingleton<ManufactureRepository>();
-    services.AddSingleton<OrderRepository>();
-    services.AddSingleton<OrderRowRepository>();
-    services.AddSingleton<ProductRepository>();
-    services.AddSingleton<ReviewRepository>();
+    services.AddScoped<CategoryRepository>();
+    services.AddScoped<DescriptionRepository>();
+    services.AddScoped<ManufactureRepository>();
+    services.AddScoped<OrderRepository>();
+    services.AddScoped<OrderRowRepository>();
+    services.AddScoped<ProductRepository>();
+    services.AddScoped<ReviewRepository>();
 
 
-    services.AddSingleton<CategoryService>();
-    services.AddSingleton<DescriptionService>();
-    services.AddSingleton<ManufactureService>();
-    services.AddSingleton<OrderService>();
-    services.AddSingleton<OrderRowService>();
-    services.AddSingleton<ProductService>();
-    services.AddSingleton<ReviewService>();
+    services.AddScoped<CategoryService>();
+    services.AddScoped<DescriptionService>();
+    services.AddScoped<ManufactureService>();
+    services.AddScoped<OrderService>();
+    services.AddScoped<OrderRowService>();
+    services.AddScoped<ProductService>();
+    services.AddScoped<ReviewService>();
 
 
 
-    services.AddSingleton<MenuService>();
+    services.AddScoped<MenuService>();
 
 
 
