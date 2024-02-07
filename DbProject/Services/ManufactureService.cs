@@ -16,6 +16,11 @@ public class ManufactureService
         _productRepository = productRepository;
     }
 
+    /// <summary>
+    ///     Creates a ManufactureEntity to database
+    /// </summary>
+    /// <param name="entity">The manufacture entity to be created</param>
+    /// <returns>the created ManufactureEntity, else null</returns>
     public Manufacture CreateManufacture(Manufacture entity)
     {
         try
@@ -30,6 +35,10 @@ public class ManufactureService
         return null!;
     }
 
+    /// <summary>
+    ///     Gets all Manufactures from database
+    /// </summary>
+    /// <returns>a collection of Manufacture objects, else null</returns>
     public IEnumerable<Manufacture> GetAllManufactures()
     {
         try
@@ -49,6 +58,11 @@ public class ManufactureService
         return null!;
     }
 
+    /// <summary>
+    ///     Gets one ManufactureEntity based on provided predicate/expression
+    /// </summary>
+    /// <param name="expression">The predicate/expression used to filter ManufactureEntity objects</param>
+    /// <returns>The ManufactureEntity that matches the predicate/expression</returns>
     public Manufacture GetOneManufacture(Expression<Func<Manufacture, bool>> expression)
     {
         try
@@ -63,6 +77,11 @@ public class ManufactureService
         return null!;
     }
 
+    /// <summary>
+    ///     Updates an existing ManufactureEntity
+    /// </summary>
+    /// <param name="manufactureEntity">The manufactureEntity containing the updated data</param>
+    /// <returns>The updated ManufactureEntity, else null</returns>
     public Manufacture UpdateManufacture(Manufacture manufactureEntity)
     {
         try
@@ -77,6 +96,11 @@ public class ManufactureService
         return null!;
     }
 
+    /// <summary>
+    ///     Deletes a ManufactureEntity based on provided predicate/expression
+    /// </summary>
+    /// <param name="expression">The predicate/expression used to filter ManufactureEntity objects</param>
+    /// <returns>True if deleted successfully, else false</returns>
     public bool DeleteManufacture(Expression<Func<Manufacture, bool>> expression)
     {
         try
@@ -91,6 +115,11 @@ public class ManufactureService
         return false;
     }
 
+    /// <summary>
+    ///     Checks if there are any products associated with the specified manufactureId
+    /// </summary>
+    /// <param name="manufactureId">The id of the manufacture to check for associated products</param>
+    /// <returns>True if there is associated products, else false</returns>
     public bool HasProducts(int manufactureId)
     {
         try

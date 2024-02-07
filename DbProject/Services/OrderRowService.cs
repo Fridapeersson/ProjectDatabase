@@ -14,19 +14,29 @@ public class OrderRowService
         _orderRowRepository = orderRowRepository;
     }
 
-    public OrderRow CreateOrderRow(OrderRow entity)
-    {
-        try
-        {
-            if(!_orderRowRepository.Exists(x => x.Id == entity.Id))
-            {
+    /// <summary>
+    ///     
+    /// </summary>
+    /// <param name="entity"></param>
+    /// <returns></returns>
+    //public OrderRow CreateOrderRow(OrderRow entity)
+    //{
+    //    try
+    //    {
+    //        if(!_orderRowRepository.Exists(x => x.Id == entity.Id))
+    //        {
 
-            }
-        }
-        catch (Exception ex) { Console.WriteLine("ERROR :: " + ex.Message); }
-        return null!;
-    }
+    //        }
+    //    }
+    //    catch (Exception ex) { Console.WriteLine("ERROR :: " + ex.Message); }
+    //    return null!;
+    //}
 
+
+    /// <summary>
+    ///     Gets all orderRows from database
+    /// </summary>
+    /// <returns>a collection of orderrow objects, else null</returns>
     public IEnumerable<OrderRow> GetAllOrderRows() 
     {
         try
@@ -46,6 +56,11 @@ public class OrderRowService
         return null!;
     }
 
+    /// <summary>
+    ///     Gets one order based on the provided predicate/expression
+    /// </summary>
+    /// <param name="expression">The predicate/expression that filters OrderRowEntity objects</param>
+    /// <returns>The OrderRowEntity that matches predicate/expression</returns>
     public OrderRow GetOneOrderRow(Expression<Func<OrderRow, bool>> expression)
     {
         try
@@ -60,6 +75,11 @@ public class OrderRowService
         return null!;
     }
 
+    /// <summary>
+    ///     Updates an existing OrderRowEntity
+    /// </summary>
+    /// <param name="orderRowEntity">The orderRowEntity containing the updated data</param>
+    /// <returns>The updated OrderRowEntity, else null</returns>
     public OrderRow UpdateOrderRow(OrderRow orderRowEntity)
     {
         try
@@ -74,6 +94,11 @@ public class OrderRowService
         return null!;
     }
 
+    /// <summary>
+    ///     Deletes an OrderRowEntity based on the provided predicate/expression
+    /// </summary>
+    /// <param name="expression">The predicate/expression used to filter OrderRowEntitiy objects</param>
+    /// <returns>True if deleted successfully, else false</returns>
     public bool DeleteOrderRow(Expression<Func<OrderRow, bool>> expression)
     {
         try
@@ -88,6 +113,10 @@ public class OrderRowService
         return false;
     }
 
+    /// <summary>
+    ///     Gets Orderrows from each group of orderRows with the same orderId
+    /// </summary>
+    /// <returns>a collection of OrderRow objects that represents one row from each group with the same orderId</returns>
     public IEnumerable<OrderRow> GetOrdersWithSameId()
     {
         try

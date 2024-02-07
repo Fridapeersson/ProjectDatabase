@@ -13,6 +13,11 @@ public class DescriptionService
         _descriptionRepository = descriptionRepository;
     }
 
+    /// <summary>
+    ///     Creates a new description in the database
+    /// </summary>
+    /// <param name="entity">The descriptionEntity to create</param>
+    /// <returns>the created descriptionEntity, else null</returns>
     public Description CreateDescription(Description entity)
     {
         try
@@ -28,6 +33,10 @@ public class DescriptionService
         return null!;
     }
 
+    /// <summary>
+    ///     gets all descriptions from database
+    /// </summary>
+    /// <returns>a collection of description objects, else null</returns>
     public IEnumerable<Description> GetAllDescriptions()
     {
         try
@@ -47,6 +56,11 @@ public class DescriptionService
         return null!;
     }
 
+    /// <summary>
+    ///     Gets one descriptionEntity based on provided predicate/expression
+    /// </summary>
+    /// <param name="predicate">the predicate/expression used to filter descriptionEntity objects</param>
+    /// <returns>The DescriptionEntity that matches the predicate/expression, else null</returns>
     public Description GetOneDescription(Expression<Func<Description, bool>> predicate)
     {
         try
@@ -61,6 +75,11 @@ public class DescriptionService
         return null!;
     }
 
+    /// <summary>
+    ///     Updates an existing DescriptionEntity 
+    /// </summary>
+    /// <param name="descriptionEntity">the descriptionEntity object containing updated data</param>
+    /// <returns>The updated DescriptionEntity object, else null</returns>
     public Description UpdateDescription(Description descriptionEntity)
     {
         try
@@ -75,6 +94,11 @@ public class DescriptionService
         return null!;
     }
 
+    /// <summary>
+    ///     Deletes a DescriptionEntity from database based on the provided predicate/expression
+    /// </summary>
+    /// <param name="predicate">the predicate/expression used to filter Description entities </param>
+    /// <returns>True if deleted successfully, else false</returns>
     public bool DeleteDescription(Expression<Func<Description, bool>> predicate)
     {
         try

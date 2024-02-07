@@ -21,6 +21,11 @@ public class ProductService
         _descriptionRepository = descriptionRepository;
     }
 
+    /// <summary>
+    ///     Creates a new product in the database using the provided DTO
+    /// </summary>
+    /// <param name="productDto">the data transfer object containing the information to create a new product</param>
+    /// <returns>the new ProductEntity, else null if product already exists</returns>
     public Product CreateProduct(CreateProductDto productDto)
     {
         try
@@ -68,6 +73,10 @@ public class ProductService
         return null!;
     }
 
+    /// <summary>
+    ///     Gets all Products from database
+    /// </summary>
+    /// <returns>A collection of ProductEntity objects, else null</returns>
     public IEnumerable<Product> GetAllProducts()
     {
         try
@@ -87,6 +96,11 @@ public class ProductService
         return null!;
     }
 
+    /// <summary>
+    ///     Gets one product entity from database based on the provided predicate/expression
+    /// </summary>
+    /// <param name="predicate">The predicate/expression used to filter ProductEntity objects</param>
+    /// <returns>The ProducEntity object that matches the predicate/expression, else null</returns>
     public Product GetOneProduct(Expression<Func<Product, bool>> predicate)
     {
         try
@@ -101,7 +115,11 @@ public class ProductService
         return null!;
     }
 
-
+    /// <summary>
+    ///     Updates an existing ProductEntity
+    /// </summary>
+    /// <param name="productEntity">The productEntity object containing the updated data</param>
+    /// <returns>The updated ProductEntity, else null</returns>
     public Product UpdateProduct(Product productEntity)
     {
         try
@@ -117,7 +135,11 @@ public class ProductService
         return null!;
     }
 
-
+    /// <summary>
+    ///     Deletes an ProductEntity based on provided predicate/expression
+    /// </summary>
+    /// <param name="predicate">The predicate/expression used to filter ProductEntity objects</param>
+    /// <returns>True if deleted successfully, else false</returns>
     public bool DeleteProduct(Expression<Func<Product, bool>> predicate)
     {
         try

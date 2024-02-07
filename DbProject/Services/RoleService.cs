@@ -17,6 +17,11 @@ public class RoleService
         _customerRepository = customerRepository;
     }
 
+    /// <summary>
+    ///     Creates a new RoleEntity in database
+    /// </summary>
+    /// <param name="entity">The Role entity containing the data for the new Role</param>
+    /// <returns>The new RoleEntity, else null</returns>
     public RoleEntity CreateRole(RoleEntity entity)
     {
         try
@@ -34,6 +39,11 @@ public class RoleService
         return null!;
     }
 
+    /// <summary>
+    ///     Gets one RoleEntity based on provided predicate/expression
+    /// </summary>
+    /// <param name="predicate">The predicate/expression used to filter RoleEntity objects</param>
+    /// <returns>The RoleEntity that matches the predicate/expression, else null</returns>
     public RoleEntity GetOneRole(Expression<Func<RoleEntity, bool>> predicate)
     {
         try
@@ -48,7 +58,10 @@ public class RoleService
         return null!;
     }
 
-
+    /// <summary>
+    ///     Gets all RoleEntities from database
+    /// </summary>
+    /// <returns>A collection of RoleEntity objects, else null</returns>
     public IEnumerable<RoleEntity> GetAllRoles()
     {
         try
@@ -68,6 +81,11 @@ public class RoleService
         return null!;
     }
 
+    /// <summary>
+    ///     Updates an existing RoleEntity
+    /// </summary>
+    /// <param name="roleEntity">The roleEntity containing the updated data</param>
+    /// <returns>The updated RoleEntity, else null</returns>
     public RoleEntity UpdateRole(RoleEntity roleEntity)
     {
         try

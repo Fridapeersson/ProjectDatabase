@@ -17,6 +17,11 @@ public class OrderService
         _productRepository = productRepository;
     }
 
+    /// <summary>
+    ///     Creates a new OrderEntity to database based on the provided DTO
+    /// </summary>
+    /// <param name="newOrderDto">the data transfer object containing the information about the new order</param>
+    /// <returns>The created Order entity, else null</returns>
     public Order CreateOrder(NewOrderDto newOrderDto)
     {
         try
@@ -48,18 +53,15 @@ public class OrderService
             //skapa nya ordern i dbn
             var createdOrder = _orderRepository.Create(order);
             return createdOrder;
-
-
-            //var orderEntity = _orderRepository.Create(new Order
-            //{
-            //    Orderdate = DateTime.Now,
-            //});
-            //return orderEntity;
         }
         catch (Exception ex) { Console.WriteLine("ERROR :: " + ex.Message); }
         return null!;
     }
 
+    /// <summary>
+    ///     Gets all Orders from database
+    /// </summary>
+    /// <returns>A collection of OrderEntity objects, else null</returns>
     public IEnumerable<Order> GetAllOrders()
     {
         try
@@ -79,6 +81,11 @@ public class OrderService
         return null!;
     }
 
+    /// <summary>
+    ///     Gets one OrderEntity from database based on provided predicate/expression
+    /// </summary>
+    /// <param name="predicate">The predicate/expression used to filter OrderEntity objects</param>
+    /// <returns>The OrderEntity that matches the predicate/expression, else null</returns>
     public Order GetOneOrder(Expression<Func<Order, bool>> predicate)
     {
         try
@@ -93,6 +100,11 @@ public class OrderService
         return null!;
     }
 
+    /// <summary>
+    ///     Updates a existing OrderEntity
+    /// </summary>
+    /// <param name="orderEntity">The orderEntity containing the updated data</param>
+    /// <returns>The updated OrderEntity, else null</returns>
     public Order UpdateOrder(Order orderEntity)
     {
         try
@@ -107,6 +119,11 @@ public class OrderService
         return null!;
     }
 
+    /// <summary>
+    ///     Deletes an OrderEntity based on the provided predicate/expression
+    /// </summary>
+    /// <param name="predicate">The predicate/expression used to filter OrderEntity objects</param>
+    /// <returns>True if deleted successfully, else false</returns>
     public bool DeleteOrder(Expression<Func<Order, bool>> predicate)
     {
         try
@@ -120,6 +137,4 @@ public class OrderService
         catch (Exception ex) { Console.WriteLine("ERROR :: " + ex.Message); }
         return false;
     }
-
-
 }

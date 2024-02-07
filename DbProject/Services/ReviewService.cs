@@ -13,6 +13,11 @@ public class ReviewService
         _reviewRepository = reviewRepository;
     }
 
+    /// <summary>
+    ///     Creates a new ReviewEntity in database
+    /// </summary>
+    /// <param name="entity">The review entity containing data for the new review</param>
+    /// <returns>The new ReviewEntity, else null</returns>
     public Review CreateReview(Review entity)
     {
         try
@@ -33,6 +38,10 @@ public class ReviewService
         return null!;
     }
 
+    /// <summary>
+    ///     Gets all Reviews from database
+    /// </summary>
+    /// <returns>A collection of ReviewEntity objects, else null</returns>
     public IEnumerable<Review> GetAllReviews()
     {
         try
@@ -53,6 +62,11 @@ public class ReviewService
         return null!;
     }
 
+    /// <summary>
+    ///     Gets one Review from database based on provided predicate/expression
+    /// </summary>
+    /// <param name="expression">The predicate/expression used to filter ReviewEntity objects</param>
+    /// <returns>The ReviewEntity that matches the predicate/expression</returns>
     public Review GetOneReview(Expression<Func<Review, bool>> expression)
     {
         try
@@ -67,6 +81,11 @@ public class ReviewService
         return null!;
     }
 
+    /// <summary>
+    ///     Updates an existing review
+    /// </summary>
+    /// <param name="reviewEntity">The reviewEntity containing the updated information</param>
+    /// <returns>The updated ReviewEntity, else null</returns>
     public Review UpdateReview(Review reviewEntity)
     {
         try
@@ -81,6 +100,11 @@ public class ReviewService
         return null!;
     }
 
+    /// <summary>
+    ///     Deletes a ReviewEntity based on provided predicate/expression
+    /// </summary>
+    /// <param name="expression">The predicate/expression used to filter ReviewEntity objects</param>
+    /// <returns>True if deleted successfully, else false</returns>
     public bool DeleteReview(Expression<Func<Review, bool>> expression)
     {
         try
@@ -95,7 +119,10 @@ public class ReviewService
         return false;
     }
 
-
+    /// <summary>
+    ///     Gets ReviewEntities with same id and groups them by productId
+    /// </summary>
+    /// <returns>A collection of ReviewEntities grouped by productId</returns>
     public IEnumerable<Review> GetReviewsWithSameId()
     {
         try

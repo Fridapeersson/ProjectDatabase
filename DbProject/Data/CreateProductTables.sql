@@ -47,7 +47,7 @@ CREATE TABLE Review
 	Id int primary key identity not null,
 	ReviewText nvarchar(max) not null,
 	ReviewDate DATETIME2 DEFAULT GETDATE() not null,
-	ProductId int REFERENCES Product(Id) ON DELETE CASCADE not null
+	ProductId int REFERENCES Product(Id) not null
 )
 
 CREATE TABLE OrderRow

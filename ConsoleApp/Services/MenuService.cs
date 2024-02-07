@@ -22,11 +22,13 @@ public class MenuService
     private readonly OrderService _orderService;
     private readonly OrderRowService _orderRowService;
     private readonly ReviewService _reviewService;
+    private readonly DescriptionService _descriptionService;
 
 
 
 
-    public MenuService(CustomerService customerService, RoleService roleService, AddressService addressService, ProductService productService, CategoryService categoryService, ManufactureService manufactureService, OrderService orderService, OrderRowService orderRowService, ReviewService reviewService)
+
+    public MenuService(CustomerService customerService, RoleService roleService, AddressService addressService, ProductService productService, CategoryService categoryService, ManufactureService manufactureService, OrderService orderService, OrderRowService orderRowService, ReviewService reviewService, DescriptionService descriptionService)
     {
         _customerService = customerService;
         _roleService = roleService;
@@ -37,6 +39,7 @@ public class MenuService
         _orderService = orderService;
         _orderRowService = orderRowService;
         _reviewService = reviewService;
+        _descriptionService = descriptionService;
     }
 
 
@@ -54,8 +57,10 @@ public class MenuService
             Console.WriteLine("6. Manufacture Menu");
             Console.WriteLine("7. Order Menu");
             Console.WriteLine("8. Review Menu");
+            Console.WriteLine("9. description Menu");
 
-            Console.WriteLine("\n9. Exit Program");
+
+            Console.WriteLine("\n10. Exit Program");
 
 
             Console.Write("Enter your choice: ");
@@ -96,6 +101,10 @@ public class MenuService
                     break;
 
                 case "9":
+                    DescriptionMenu();
+                    break;
+
+                case "10":
                     System.Environment.Exit(0);
                     break;
 
@@ -147,13 +156,13 @@ public class MenuService
                     DeleteCustomerMenu();
                     break;
 
-                case "6":
-                    DeleteSpecificAddressMenu();
-                    break;
+                //case "6":
+                //    DeleteSpecificAddressMenu();
+                //    break;
 
-                case "7":
-                    DeleteSpecificRoleMenu();
-                    break;
+                //case "7":
+                //    DeleteSpecificRoleMenu();
+                //    break;
 
                 case "9":
                     StartMenu();
@@ -194,17 +203,6 @@ public class MenuService
 
             Console.Write("City: ");
             var city = Console.ReadLine()!.ToLower();
-
-            //var customerDto = _customerService.CreateCustomer(new CreateCustomerDto
-            //{
-            //    FirstName = firstName,
-            //    LastName = lastName,
-            //    Email = email,
-            //    RoleName = roleName,
-            //    Street = street,
-            //    PostalCode = postalCode,
-            //    City = city
-            //});
 
             var existingAddress = _addressService.GetOneAddress(x => x.Street.ToLower() == street && x.PostalCode.ToLower() == postalCode && x.City.ToLower() == city);
 
@@ -287,10 +285,6 @@ public class MenuService
                 Console.WriteLine("All customers: \n");
                 foreach (var customer in customerEntity)
                 {
-                    //var address = _addressService.GetOneAddress(x => x.Id == customer.AddressId);
-                    //var roleName = _roleService.GetOneRole(x => x.Id == customer.RoleId);
-
-                    //Console.WriteLine("_______________________________________________");
                     Console.WriteLine($"{customer.Id}. {customer.FirstName}, {customer.LastName}, {customer.Email}, {customer.Address.Street}, {customer.Address.PostalCode}, {customer.Address.City}, {customer.Role.RoleName}");
                     Console.WriteLine("______________________________________________________________________________________________");
 
@@ -301,7 +295,6 @@ public class MenuService
             {
                 Console.WriteLine("No customers found");
             }
-
         }
         catch (Exception ex) { Console.WriteLine("ERROR :: " + ex.Message); }
     }
@@ -324,7 +317,6 @@ public class MenuService
                 {
                     Console.WriteLine("\nSelected customer:");
                     Console.WriteLine($"{selectedCustomer.Id}. Firstname: {selectedCustomer.FirstName}, Lastname: {selectedCustomer.LastName}, Email: {selectedCustomer.Email}, Street: {selectedCustomer.Address.Street}, PostalCode: {selectedCustomer.Address.PostalCode}, City: {selectedCustomer.Address.City}, Role: {selectedCustomer.Role.RoleName}");
-
 
                     PressToContinue();
                 }
@@ -482,10 +474,6 @@ public class MenuService
             var input = int.Parse(Console.ReadLine()!);
             var customerEntity = _customerService.GetOneCustomer(x => x.Id == input);
 
-
-
-            //var result = _customerService.DeleteCustomer(x => x.Id == input);
-
             if (customerEntity != null)
             {
                 Console.WriteLine($"Are you sure you want to delete {customerEntity.FirstName} {customerEntity.LastName}? (y/n)");
@@ -527,6 +515,7 @@ public class MenuService
             Console.WriteLine("4. Update Address");
             Console.WriteLine("5. Delete Address");
 
+            Console.WriteLine("9. Back to main menu");
             Console.Write("Enter your option: ");
             var option = Console.ReadLine();
 
@@ -550,6 +539,15 @@ public class MenuService
 
                 case "5":
                     DeleteSpecificAddressMenu();
+                    break;
+
+                case "9":
+                    StartMenu();
+                    break;
+
+                default:
+                    Console.WriteLine("Invalid choice, try again");
+                    PressToContinue();
                     break;
             }
 
@@ -676,8 +674,6 @@ public class MenuService
 
                 var customerEntity = _customerService.GetOneCustomer(x => x.Id == customerId && x.Address.Id == addressId);
 
-
-
                 if (customerEntity != null)
                 {
                     Console.WriteLine("\nSelected customer:");
@@ -796,8 +792,6 @@ public class MenuService
         catch (Exception ex) { Console.WriteLine("ERROR :: " + ex.Message); }
     }
 
-
-
     //<<<<<<<<<<<<<<<<<<<<<<<ROLE>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
     public void RoleMenu()
     {
@@ -811,6 +805,8 @@ public class MenuService
             Console.WriteLine("3. Get All Roles");
             Console.WriteLine("4. Update Role");
             Console.WriteLine("5. Delete Role");
+
+            Console.WriteLine("9. Back to main menu");
 
             Console.Write("Enter your option: ");
             var option = Console.ReadLine();
@@ -835,6 +831,15 @@ public class MenuService
 
                 case "5":
                     DeleteSpecificRoleMenu();
+                    break;
+
+                case "9":
+                    StartMenu();
+                    break;
+
+                default:
+                    Console.WriteLine("Invalid choice, try again");
+                    PressToContinue();
                     break;
             }
 
@@ -1091,10 +1096,7 @@ public class MenuService
             Console.WriteLine("4. Update Product");
             Console.WriteLine("5. Delete Product");
 
-            Console.WriteLine("6. Delete specific category");
-            Console.WriteLine("7. Delete specific manufacture");
-
-            Console.WriteLine("\n9. Back to stat menu");
+            Console.WriteLine("\n9. Back to main menu");
             Console.Write("\n Enter your choice: ");
             var option = Console.ReadLine();
 
@@ -1136,7 +1138,7 @@ public class MenuService
     {
         try
         {
-            ClearAndTitle("CREATE PRODUCT");
+            ClearAndTitle("Create Product");
 
             Console.Write("Enter productname: ");
             var productName = Console.ReadLine()!.ToLower();
@@ -1369,7 +1371,6 @@ public class MenuService
             Console.WriteLine("4. Update Category");
             Console.WriteLine("5. Delete Category");
 
-
             Console.WriteLine("\n9. Back to stat menu");
             Console.Write("\n Enter your choice: ");
             var option = Console.ReadLine();
@@ -1394,8 +1395,6 @@ public class MenuService
                 case "5":
                     DeleteCategoryMenu();
                     break;
-
-
 
                 case "9":
                     StartMenu();
@@ -1628,7 +1627,7 @@ public class MenuService
             Console.WriteLine("5. Delete Manufacture");
 
 
-            Console.WriteLine("\n9. Back to stat menu");
+            Console.WriteLine("\n9. Back to main menu");
             Console.Write("\n Enter your choice: ");
             var option = Console.ReadLine();
 
@@ -1883,7 +1882,7 @@ public class MenuService
         }
         else
         {
-            Console.WriteLine("No customer was found");
+            Console.WriteLine("No product was found");
         }
     }
 
@@ -1900,6 +1899,8 @@ public class MenuService
             Console.WriteLine("3. Get All Orders");
             Console.WriteLine("4. Update Order");
             Console.WriteLine("5. Delete Order");
+
+            Console.WriteLine("9. Back to main menu");
 
             var option = Console.ReadLine();
 
@@ -1923,6 +1924,15 @@ public class MenuService
 
                 case "5":
                     DeleteOrderMenu();
+                    break;
+
+                case "9":
+                    StartMenu();
+                    break;
+
+                default:
+                    Console.WriteLine("Invalid choice, try again");
+                    PressToContinue();
                     break;
 
             }
@@ -2009,10 +2019,6 @@ public class MenuService
             ClearAndTitle("Show One Order");
 
             var allOrderRows = _orderRowService.GetOrdersWithSameId();
-            //foreach(var orderRow in allOrderRows)
-            //{
-            //    Console.WriteLine($"{orderRow.OrderId} {orderRow.Product.ProductName}");
-            //}
 
             Console.Write("Enter order id: ");
             var input = int.Parse(Console.ReadLine()!);
@@ -2118,7 +2124,6 @@ public class MenuService
         }
     }
 
-
     public void DeleteOrderMenu()
     {
         try
@@ -2145,10 +2150,6 @@ public class MenuService
     }
 
 
-
-
-
-
     //<<<<<<<<<<<<<<<<<<<<Review Menu>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
     public void ReviewMenu()
@@ -2161,6 +2162,8 @@ public class MenuService
             Console.WriteLine("3. Get All Reviews");
             Console.WriteLine("4. Update Review");
             Console.WriteLine("5. Delete Review");
+
+            Console.WriteLine("9. Back to main menu");
             Console.Write("Enter option: ");
             var option = Console.ReadLine();
 
@@ -2184,6 +2187,15 @@ public class MenuService
 
                 case "5":
                     DeleteReview();
+                    break;
+
+                case "9":
+                    StartMenu();
+                    break;
+
+                default:
+                    Console.WriteLine("Invalid choice, try again");
+                    PressToContinue();
                     break;
             }
 
@@ -2374,6 +2386,160 @@ public class MenuService
 
             }
             PressToContinue();
+        }
+        catch (Exception ex) { Console.WriteLine("ERROR :: " + ex.Message); }
+    }
+
+
+    //<<<<<<<<<<<DESCRIPTION>>>>>>>>>>>>>>>>>>
+    public void DescriptionMenu()
+    {
+        //create and delete is being bound to product
+        try
+        {
+            ClearAndTitle("Description Menu");
+            Console.WriteLine("1. Get Description For Specific Product");
+            Console.WriteLine("2. Get All Descriptions");
+            Console.WriteLine("3. Update Description");
+            Console.WriteLine("9. Back to main menu");
+            Console.Write("Enter option: ");
+            var option = Console.ReadLine();
+
+            switch (option)
+            {
+                case "1":
+                    GetDescriptionForOneProductMenu();
+                    break;
+
+                case "2":
+                    GetAllDescriptionsMenu();
+                    break;
+
+                case "3":
+                    UpdateDescriptionMenu();
+                    break;
+
+                case "9":
+                    StartMenu(); 
+                    break;
+
+                default:
+                    Console.WriteLine("Invalid choice, try again");
+                    PressToContinue();
+                    break;
+            }
+
+        }
+        catch (Exception ex) { Console.WriteLine("ERROR :: " + ex.Message); }
+    }
+
+    public void GetDescriptionForOneProductMenu()
+    {
+        try
+        {
+            ClearAndTitle("Get Description For Specific Product");
+
+            DisplayProductIdAndName();
+
+            Console.Write("Enter the product ID to see the description: ");
+            var productId = int.Parse(Console.ReadLine()!);
+
+            var description = _descriptionService.GetOneDescription(d => d.Products.Any(p => p.Id == productId));
+
+            if (description != null)
+            {
+                Console.WriteLine($"Description for product ID {productId}:");
+                Console.WriteLine($"Ingress: {description.Ingress}");
+                Console.WriteLine($"Description: {description.DescriptionText}");
+            }
+            else
+            {
+                Console.WriteLine($"No description found.");
+            }
+
+            PressToContinue();
+        }
+        catch (Exception ex) { Console.WriteLine("ERROR :: " + ex.Message); }
+    }
+
+    public void GetAllDescriptionsMenu()
+    {
+        try
+        {
+            ClearAndTitle("Get All Descriptions");
+
+            var allDescriptions = _descriptionService.GetAllDescriptions();
+
+            foreach (var description in allDescriptions)
+            {
+                // hämta produktnamnet från den associerade produkten för beskrivningen
+                var productName = description.Products.FirstOrDefault(x => x.DescriptionId == description.Id)!.ProductName;
+
+                Console.WriteLine($"Description for: {productName}");
+                Console.WriteLine($"Ingress: {description.Ingress}");
+                Console.WriteLine($"Description text: {description.DescriptionText}");
+                Console.WriteLine("____________________________________"); 
+            }
+
+            PressToContinue();
+        }
+        catch (Exception ex) { Console.WriteLine("ERROR :: " + ex.Message); }
+    }
+
+    public void UpdateDescriptionMenu()
+    {
+        try
+        {
+            ClearAndTitle("Update Description");
+
+            DisplayProductIdAndName();
+            Console.WriteLine("Enter a product to update ingress and description text");
+            var productId = int.Parse(Console.ReadLine()!);
+
+            var productEntity = _productService.GetOneProduct(x => x.Id == productId);
+            if( productEntity != null )
+            {
+                Console.WriteLine("Enter ingress: ");
+                var ingress = Console.ReadLine();
+                if(string.IsNullOrWhiteSpace(ingress))
+                {
+                    Console.WriteLine("Can´t be empty, try again!");
+                    PressToContinue();
+                    return;
+                }
+
+                Console.WriteLine("\nEnter descritpion: ");
+                var descriptionText = Console.ReadLine();
+
+                var existingDescriptionEntity = _descriptionService.GetOneDescription(x => x.Products.Any(p => p.Id == productId));
+
+
+                var newDescriptionEntity = new Description
+                {
+                    Id = existingDescriptionEntity.Id,
+                    Products = existingDescriptionEntity.Products,
+                    Ingress = ingress,
+                    DescriptionText = descriptionText
+                };
+
+                var updatedDescriptionEntity = _descriptionService.UpdateDescription(newDescriptionEntity);
+                if(updatedDescriptionEntity != null)
+                {
+                    Console.WriteLine("Description updated successfully!");
+                }
+                else
+                {
+                    Console.WriteLine("Failed to update description");
+                }
+            }
+            else
+            {
+                Console.WriteLine("Product was not found");
+            }
+
+
+            PressToContinue();
+
         }
         catch (Exception ex) { Console.WriteLine("ERROR :: " + ex.Message); }
     }
