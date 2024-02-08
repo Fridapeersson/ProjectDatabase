@@ -135,7 +135,7 @@ public class ManufactureRepository_Tests
     }
 
     [Fact]
-    public void Delete_Should_Nit_DeleteManufacureFromDatabase_ReturnFalse()
+    public void Delete_Should_Not_DeleteManufacureFromDatabase_ReturnFalse()
     {
         // Arrange
         var manufactureRepository = new ManufactureRepository(_productContext);

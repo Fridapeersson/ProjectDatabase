@@ -25,6 +25,23 @@ public class AddressRepository_Tests
     }
 
     [Fact]
+    public void Update_Should_UpdateAddressEntityToDatabase()
+    {
+        //Arrange
+        var addressRepository = new AddressRepository(_customerDbContext);
+        var addressEntity = new AddressEntity { Street = "Testgatan 3", PostalCode = "12345", City = "Helsingborg" };
+        addressRepository.Create(addressEntity);
+
+        //Act
+        addressEntity.Street = "Test";
+        var result = addressRepository.Update(x => x.Id == addressEntity.Id, addressEntity);
+
+        //Assert
+        Assert.NotNull(result);
+        Assert.Equal("Test", result.Street);
+    }
+
+    [Fact]
     public void Create_Should_Not_CreateNewAddressEntityToDatabase()
     {
         //Arrange

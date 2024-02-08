@@ -8,13 +8,12 @@ namespace DbProject.Services;
 public class RoleService
 {
     private readonly RoleRepository _roleRepository;
-    private readonly CustomerRepository _customerRepository;
 
 
-    public RoleService(RoleRepository roleRepository, CustomerRepository customerRepository)
+
+    public RoleService(RoleRepository roleRepository)
     {
         _roleRepository = roleRepository;
-        _customerRepository = customerRepository;
     }
 
     /// <summary>
@@ -124,19 +123,19 @@ public class RoleService
     /// </summary>
     /// <param name="roleId">the id of the role to check for associated customers</param>
     /// <returns>True if there are customers associated with the role id, else false</returns>
-    public bool HasCustomers(int roleId)
-    {
-        try
-        {
-            //hämta kunder kopplade till rollen
-            var customerInAddress = _customerRepository.GetAll().Where(x => x.RoleId == roleId);
-            return customerInAddress.Any();
+    //public bool HasCustomers(int roleId)
+    //{
+    //    try
+    //    {
+    //        //hämta kunder kopplade till rollen
+    //        var customerInAddress = _customerRepository.GetAll().Where(x => x.RoleId == roleId);
+    //        return customerInAddress.Any();
 
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine("ERROR :: " + ex.Message);
-            return false;
-        }
-    }
+    //    }
+    //    catch (Exception ex)
+    //    {
+    //        Console.WriteLine("ERROR :: " + ex.Message);
+    //        return false;
+    //    }
+    //}
 }

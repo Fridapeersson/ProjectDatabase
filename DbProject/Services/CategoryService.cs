@@ -7,13 +7,11 @@ namespace DbProject.Services;
 public class CategoryService
 {
     private readonly CategoryRepository _categoryRepository;
-    private readonly ProductRepository _productRepository;
 
 
-    public CategoryService(CategoryRepository categoryRepository, ProductRepository productRepository)
+    public CategoryService(CategoryRepository categoryRepository)
     {
         _categoryRepository = categoryRepository;
-        _productRepository = productRepository;
     }
 
     /// <summary>
@@ -119,20 +117,20 @@ public class CategoryService
     /// </summary>
     /// <param name="categoryId">the if of the category to check for associated products</param>
     /// <returns>True if there is associated products, else false</returns>
-    public bool HasProducts(int categoryId)
-    {
-        try
-        {
-           //hämta produkter kopplade till kategorin
-            var productsInCategory = _productRepository.GetAll().Where(p => p.CategoryId == categoryId);
+    //public bool HasProducts(int categoryId)
+    //{
+    //    try
+    //    {
+    //       //hämta produkter kopplade till kategorin
+    //        var productsInCategory = _productRepository.GetAll().Where(p => p.CategoryId == categoryId);
 
-            //kollar om det finns några kategorier i listan
-            return productsInCategory.Any();
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine("ERROR :: " + ex.Message);
-            return false;
-        }
-    }
+    //        //kollar om det finns några kategorier i listan
+    //        return productsInCategory.Any();
+    //    }
+    //    catch (Exception ex)
+    //    {
+    //        Console.WriteLine("ERROR :: " + ex.Message);
+    //        return false;
+    //    }
+    //}
 }

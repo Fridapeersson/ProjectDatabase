@@ -1,4 +1,6 @@
 ﻿using DbProject.Contexts;
+using DbProject.Entities;
+using DbProject.Services;
 using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
 using System.Linq.Expressions;
@@ -122,5 +124,26 @@ public class BaseRepository<TEntity, TContext> where TEntity : class where TCont
         }
         catch (Exception ex) { Debug.WriteLine("ERROR :: " + ex.Message); }
         return false!;
+    }
+
+    public bool HasCustomers(Expression<Func<TEntity, bool>> predicate)
+    {
+        try
+        {
+            var customerInEntity = _context.Set<TEntity>().Any(predicate);
+            return customerInEntity;
+            //hömta kunder kopplade till addressen
+            //var customerInAddress = _customerService.GetAllCustomers().Where(predicate);
+            //if (customerInAddress.Any())
+            //{
+            //    return true;
+            //}
+            //return false;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("ERROR :: " + ex.Message);
+            return false;
+        }
     }
 }

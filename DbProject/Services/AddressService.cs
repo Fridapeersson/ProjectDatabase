@@ -7,14 +7,10 @@ namespace DbProject.Services;
 public class AddressService
 {
     private readonly AddressRepository _addressRepository;
-    private readonly ProductRepository _productRepository;
-    private readonly CustomerRepository _customerRepository;
 
-    public AddressService(AddressRepository addressRepository, ProductRepository productRepository, CustomerRepository customerRepository)
+    public AddressService(AddressRepository addressRepository)
     {
         _addressRepository = addressRepository;
-        _productRepository = productRepository;
-        _customerRepository = customerRepository;
     }
 
     /// <summary>
@@ -93,13 +89,16 @@ public class AddressService
     {
         try
         {
-            var updatedAddressEntity = _addressRepository.Update(x => x.Id == addressEntity.Id, addressEntity);
-            if(updatedAddressEntity != null)
+            var updatedAddress = _addressRepository.Update(x => x.Id == addressEntity.Id, addressEntity);
+            if (updatedAddress != null)
             {
-                return updatedAddressEntity;
+                return updatedAddress;
             }
         }
-        catch (Exception ex) { Console.WriteLine("ERROR :: " + ex.Message); }
+        catch (Exception ex)
+        {
+            Console.WriteLine("ERROR :: " + ex.Message);
+        }
         return null!;
     }
 
@@ -127,24 +126,24 @@ public class AddressService
     /// </summary>
     /// <param name="addressId">The id of the addressentity to check</param>
     /// <returns>True if the addressEntity has associated customers, else false</returns>
-    public bool HasCustomers(int addressId)
-    {
-        try
-        {
-            //hömta kunder kopplade till addressen
-            var customerInAddress = _customerRepository.GetAll().Where(x => x.AddressId == addressId);
-            if(customerInAddress.Any())
-            {
-                return true;
-            }
-            //return customerInAddress.Any();
-            return false;
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine("ERROR :: " + ex.Message);
-            return false;
-        }
-    }
+    //public bool HasCustomers(int addressId)
+    //{
+    //    try
+    //    {
+    //        //hömta kunder kopplade till addressen
+    //        var customerInAddress = _customerRepository.GetAll().Where(x => x.AddressId == addressId);
+    //        if(customerInAddress.Any())
+    //        {
+    //            return true;
+    //        }
+    //        //return customerInAddress.Any();
+    //        return false;
+    //    }
+    //    catch (Exception ex)
+    //    {
+    //        Console.WriteLine("ERROR :: " + ex.Message);
+    //        return false;
+    //    }
+    //}
 
 }
