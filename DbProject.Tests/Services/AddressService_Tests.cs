@@ -96,24 +96,6 @@ public class AddressService_Tests
         Assert.Null(result);
     }
 
-    //[Fact]
-    //public void UpdateAddress_Should_UpdateExistingAddress_ReturnUpdatedAddress()
-    //{
-    //    // Arrange
-    //    var addressRepository = new AddressRepository(_customerDbContext);
-    //    var addressService = new AddressService(addressRepository);
-
-    //    var addressEntity = new AddressEntity { Street = "Test", PostalCode = "12345", City = "TestCity" };
-    //    addressService.CreateAddress(addressEntity);
-
-    //    // Act
-    //    addressEntity.Street = "TestStreet";
-    //    var result = addressService.UpdateAddress(addressEntity);
-
-    //    // Assert
-    //    Assert.NotNull(result);
-    //}
-
     [Fact]
     public void DeleteAddress_Should_DeleteAddressFromDatabase_ReturnTrue()
     {

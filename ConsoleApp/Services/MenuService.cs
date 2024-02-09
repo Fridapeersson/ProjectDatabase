@@ -1,13 +1,9 @@
 ﻿using DbProject.Dtos;
 using DbProject.Entities;
-using DbProject.Repositories;
 using DbProject.Services;
-using Microsoft.EntityFrameworkCore.Metadata;
-using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using System.Data;
 using System.Diagnostics;
-using System.Linq.Expressions;
-using System.Net;
+
 
 namespace ConsoleApp.Services;
 
@@ -58,7 +54,7 @@ public class MenuService
             Console.WriteLine("6. Manufacture Menu");
             Console.WriteLine("7. Order Menu");
             Console.WriteLine("8. Review Menu");
-            Console.WriteLine("9. description Menu");
+            Console.WriteLine("9. Description Menu");
 
 
             Console.WriteLine("\n10. Exit Program");
@@ -131,7 +127,7 @@ public class MenuService
             Console.WriteLine("4. Update Customer");
             Console.WriteLine("5. Delete Customer");
 
-            Console.WriteLine("9. Back to main menu");
+            Console.WriteLine("\n9. Back to main menu");
             Console.Write("\n Enter your choice:");
             var option = Console.ReadLine();
 
@@ -166,7 +162,6 @@ public class MenuService
                     break;
             }
         }
-
     }
 
     public void CreateCustomerMenu()
@@ -175,32 +170,18 @@ public class MenuService
         {
             ClearAndTitle("CREATE CUSTOMER");
 
-            Console.Write("First name: ");
-            var firstName = Console.ReadLine()!.ToLower();
-
-            Console.Write("Lastname: ");
-            var lastName = Console.ReadLine()!.ToLower();
-
-            Console.Write("Email: ");
-            var email = Console.ReadLine()!.ToLower();
-
-            Console.Write("Rolename: ");
-            var roleName = Console.ReadLine()!.ToLower();
-
-            Console.Write("Street: ");
-            var street = Console.ReadLine()!.ToLower();
-
-            Console.Write("Postal Code: ");
-            var postalCode = Console.ReadLine()!.ToLower();
-
-            Console.Write("City: ");
-            var city = Console.ReadLine()!.ToLower();
+            var firstName = GetValidStringUserInput("First name: ");
+            var lastName = GetValidStringUserInput("Last name: ");
+            var email = GetValidStringUserInput("Email: ");
+            var roleName = GetValidStringUserInput("Role");
+            var street = GetValidStringUserInput("Streetname: ");
+            var postalCode = GetValidStringUserInput("Postal code: ");
+            var city = GetValidStringUserInput("City: ");
 
             var existingAddress = _addressService.GetOneAddress(x => x.Street.ToLower() == street && x.PostalCode.ToLower() == postalCode && x.City.ToLower() == city);
 
             if (existingAddress != null)
             {
-                // Skapa kund med befintlig address
                 var customerDto = _customerService.CreateCustomer(new CreateCustomerDto
                 {
                     FirstName = firstName,
@@ -224,7 +205,7 @@ public class MenuService
             }
             else
             {
-                // Skapa ny address och kund
+                // Creating new customer and address
                 var newAddressDto = _addressService.CreateAddress(new AddressEntity
                 {
                     Street = street,
@@ -279,7 +260,6 @@ public class MenuService
                 {
                     Console.WriteLine($"{customer.Id}. {customer.FirstName}, {customer.LastName}, {customer.Email}, {customer.Address.Street}, {customer.Address.PostalCode}, {customer.Address.City}, {customer.Role.RoleName}");
                     Console.WriteLine("______________________________________________________________________________________________");
-
                 }
                 PressToContinue();
             }
@@ -295,36 +275,28 @@ public class MenuService
     {
         try
         {
-            ClearAndTitle("GET ONE CUSTOMER");
+            ClearAndTitle("Get One Customer");
 
             DisplayCustomerIdAndName();
 
-            Console.Write("Enter id to se all details: ");
-            var customerId = Console.ReadLine();
-
-            if (int.TryParse(customerId, out int inputId))
+            var customerId = GetValidIdUserInput("Enter id to se all details: ");
+            var selectedCustomer = _customerService.GetOneCustomer(x => x.Id == customerId);
+            
+            if (selectedCustomer != null)
             {
-                var selectedCustomer = _customerService.GetOneCustomer(x => x.Id == inputId);
-                if (selectedCustomer != null)
-                {
-                    Console.WriteLine("\nSelected customer:");
-                    Console.WriteLine($"{selectedCustomer.Id}. Firstname: {selectedCustomer.FirstName}, Lastname: {selectedCustomer.LastName}, Email: {selectedCustomer.Email}, Street: {selectedCustomer.Address.Street}, PostalCode: {selectedCustomer.Address.PostalCode}, City: {selectedCustomer.Address.City}, Role: {selectedCustomer.Role.RoleName}");
-
-                    PressToContinue();
-                }
-                else
-                {
-                    Console.WriteLine("No customer found");
-                }
+                Console.WriteLine("\nSelected customer:");
+                Console.WriteLine($"{selectedCustomer.Id}. Firstname: {selectedCustomer.FirstName}, Lastname: {selectedCustomer.LastName}, Email: {selectedCustomer.Email}, Street: {selectedCustomer.Address.Street}, PostalCode: {selectedCustomer.Address.PostalCode}, City: {selectedCustomer.Address.City}, Role: {selectedCustomer.Role.RoleName}");
             }
             else
             {
-                Console.WriteLine("Invalid input. Try again!");
+                Console.WriteLine("No customer found");
             }
+
+            PressToContinue();
+
         }
         catch (Exception ex) { Console.WriteLine("ERROR :: " + ex.Message); }
     }
-
 
     public void UpdateCustomerMenu()
     {
@@ -334,26 +306,28 @@ public class MenuService
 
             DisplayCustomerIdAndName();
 
-            Console.Write($"Enter id to update customer: ");
-            var customerId = Console.ReadLine();
+            //Console.Write($"Enter id to update customer: ");
+            //var customerId = Console.ReadLine();
+            var customerId = GetValidIdUserInput("Enter id to update customer: ");
 
-            if (int.TryParse(customerId, out int inputId))
-            {
-                var customerEntity = _customerService.GetOneCustomer(x => x.Id == inputId);
+            //if (int.TryParse(customerId, out int inputId))
+            //{
+                var customerEntity = _customerService.GetOneCustomer(x => x.Id == customerId);
                 if (customerEntity != null)
                 {
                     Console.WriteLine("\nSelected customer:");
                     Console.WriteLine($"{customerEntity.Id}. Firstname: {customerEntity.FirstName}, Lastname: {customerEntity.LastName}, Email: {customerEntity.Email}");
 
-                    Console.Write("\nEnter new email: ");
-                    var newEmailInput = Console.ReadLine()?.ToLower();
+                var newEmail = GetValidStringUserInput("\nEnter new email: ");
+                    //Console.Write("\nEnter new email: ");
+                    //var newEmailInput = Console.ReadLine()!.ToLower();
 
-                    if (!string.IsNullOrWhiteSpace(newEmailInput))
+                    if (!string.IsNullOrWhiteSpace(newEmail))
                     {
-                        var existingEmail = _customerService.GetOneCustomer(x => x.Email == newEmailInput);
+                        var existingEmail = _customerService.GetOneCustomer(x => x.Email == newEmail);
                         if (existingEmail == null)
                         {
-                            customerEntity.Email = newEmailInput;
+                            customerEntity.Email = newEmail;
                         }
                         else
                         {
@@ -362,98 +336,51 @@ public class MenuService
                             return;
                         }
                     }
+                //else
+                //{
+                //    Console.WriteLine("You need to enter an email");
+                //    PressToContinue();
+                //    return;
+                //}
 
-                    Console.Write("\nEnter new first name: ");
-                    var newFirstNameInput = Console.ReadLine()?.ToLower();
+                //Console.Write("\nEnter new first name: ");
+                //var newFirstNameInput = Console.ReadLine()?.ToLower();
+                var newFirstName = GetValidStringUserInput("\nEnter new first name: ");
+                if (!string.IsNullOrWhiteSpace(newFirstName))
+                {
+                    customerEntity.FirstName = newFirstName;
+                }
+                //Console.Write("\nEnter new lastname: ");
+                //    var newLastNameInput = Console.ReadLine()?.ToLower();
 
-                    if (!string.IsNullOrWhiteSpace(newFirstNameInput))
-                    {
-                        customerEntity.FirstName = newFirstNameInput;
-                    }
+                var newLastName = GetValidStringUserInput("\nEnter new lastname: ");
+                if (!string.IsNullOrWhiteSpace(newLastName))
+                {
+                    customerEntity.LastName = newLastName;
+                }
 
-                    Console.Write("\nEnter new lastname: ");
-                    var newLastNameInput = Console.ReadLine()?.ToLower();
-
-                    if (!string.IsNullOrWhiteSpace(newLastNameInput))
-                    {
-                        customerEntity.LastName = newLastNameInput;
-                    }
-
-                    //Console.Write("\nEnter new streetname: ");
-                    //var newStreetInput = Console.ReadLine();
-
-                    //Console.Write("\nEnter new postalcode: ");
-                    //var newPostalCodeInput = Console.ReadLine();
-
-                    //Console.Write("\nEnter new city: ");
-                    //var newCityInput = Console.ReadLine();
-
-                    //if (!string.IsNullOrWhiteSpace(newStreetInput) || !string.IsNullOrWhiteSpace(newPostalCodeInput) || !string.IsNullOrWhiteSpace(newCityInput))
-                    //{
-                    //    var existingAddress = _addressService.GetOneAddress(x => x.Street == newStreetInput && x.PostalCode == newPostalCodeInput && x.City == newCityInput);
-
-                    //    if (existingAddress != null)
-                    //    {
-                    //        customerEntity.Address = existingAddress;
-                    //    }
-                    //    else
-                    //    {
-                    //        var newAddress = new AddressEntity
-                    //        {
-                    //            Street = newStreetInput!,
-                    //            PostalCode = newPostalCodeInput!,
-                    //            City = newCityInput!
-                    //        };
-
-                    //        // kollar om den nya adressen redan finns i databasen
-                    //        var existingAddressEntity = _addressService.GetOneAddress(x => x.Street == newAddress.Street && x.PostalCode == newAddress.PostalCode && x.City == newAddress.City);
-
-                    //        if (existingAddressEntity != null)
-                    //        {
-                    //            customerEntity.Address = existingAddressEntity;
-                    //        }
-                    //        else
-                    //        {
-                    //            // gör en ny adress om den inte redan finns i databasen
-                    //            var createdAddressEntity = _addressService.CreateAddress(newAddress);
-                    //            if (createdAddressEntity != null)
-                    //            {
-                    //                customerEntity.Address = createdAddressEntity;
-                    //            }
-                    //            else
-                    //            {
-                    //                Console.WriteLine("Error creating new address. Customer was not updated.");
-                    //                PressToContinue();
-                    //                return;
-                    //            }
-                    //        }
-                    //    }
-                    //}
-
-                    // uppdaterar kunden
-                    var updatedCustomer = _customerService.UpdateCustomer(customerEntity);
-                    if (updatedCustomer != null)
-                    {
-                        Console.WriteLine("Customer was updated successfully");
-                    }
-                    else
-                    {
-                        Console.WriteLine("Error updating customer.");
-                    }
+                var updatedCustomer = _customerService.UpdateCustomer(customerEntity);
+                if (updatedCustomer != null)
+                {
+                    Console.WriteLine("Customer was updated successfully");
                 }
                 else
                 {
-                    Console.WriteLine("Customer not found.");
+                    Console.WriteLine("Error updating customer.");
                 }
-                PressToContinue();
             }
+            else
+            {
+                Console.WriteLine("Customer not found.");
+            }
+            PressToContinue();
+            //}
         }
         catch (Exception ex)
         {
             Console.WriteLine("ERROR :: " + ex.Message);
         }
     }
-
 
     public bool DeleteCustomerMenu()
     {
@@ -462,8 +389,9 @@ public class MenuService
             ClearAndTitle("DELETE CUSTOMER");
 
             DisplayCustomerIdAndName();
-            Console.Write("Enter id to delete customer: ");
-            var input = int.Parse(Console.ReadLine()!);
+            //Console.Write("Enter id to delete customer: ");
+            //var input = int.Parse(Console.ReadLine()!);
+            var input = GetValidIdUserInput("Enter id to delete customer: ");
             var customerEntity = _customerService.GetOneCustomer(x => x.Id == input);
 
             if (customerEntity != null)
@@ -484,7 +412,6 @@ public class MenuService
             {
                 Console.WriteLine("Something went wrong!");
             }
-
             PressToContinue();
         }
         catch (Exception ex) { Console.WriteLine("ERROR :: " + ex.Message); }
@@ -498,50 +425,54 @@ public class MenuService
     {
         try
         {
-            ClearAndTitle("Address Menu");
-
-
-            Console.WriteLine("1. Create Address");
-            Console.WriteLine("2. Get One Address");
-            Console.WriteLine("3. Get All Addresses");
-            Console.WriteLine("4. Update Address");
-            Console.WriteLine("5. Delete Address");
-
-            Console.WriteLine("9. Back to main menu");
-            Console.Write("Enter your option: ");
-            var option = Console.ReadLine();
-
-            switch(option)
+            while(true) 
             {
-                case "1":
-                    CreateAddressMenu();
-                    break;
+                ClearAndTitle("Address Menu");
 
-                case "2":
-                    GetOneAddressMenu();
-                    break;
 
-                case "3":
-                    GetAllAddressesMenu();
-                    break;
+                Console.WriteLine("1. Create Address");
+                Console.WriteLine("2. Get One Address");
+                Console.WriteLine("3. Get All Addresses");
+                Console.WriteLine("4. Update Address");
+                Console.WriteLine("5. Delete Address");
 
-                case "4":
-                    UpdateAddressMenu();
-                    break;
+                Console.WriteLine("\n9. Back to main menu");
+                Console.Write("Enter your option: ");
+                var option = Console.ReadLine();
 
-                case "5":
-                    DeleteSpecificAddressMenu();
-                    break;
+                switch (option)
+                {
+                    case "1":
+                        CreateAddressMenu();
+                        break;
 
-                case "9":
-                    StartMenu();
-                    break;
+                    case "2":
+                        GetOneAddressMenu();
+                        break;
 
-                default:
-                    Console.WriteLine("Invalid choice, try again");
-                    PressToContinue();
-                    break;
+                    case "3":
+                        GetAllAddressesMenu();
+                        break;
+
+                    case "4":
+                        UpdateAddressMenu();
+                        break;
+
+                    case "5":
+                        DeleteSpecificAddressMenu();
+                        break;
+
+                    case "9":
+                        StartMenu();
+                        break;
+
+                    default:
+                        Console.WriteLine("Invalid choice, try again");
+                        PressToContinue();
+                        break;
+                }
             }
+            
 
         }
         catch (Exception ex) { Console.WriteLine("ERROR :: " + ex.Message); }
@@ -553,14 +484,9 @@ public class MenuService
         {
             ClearAndTitle("CreateAddress");
 
-            Console.Write("Enter Street name: ");
-            var streetName = Console.ReadLine();
-
-            Console.Write("Enter postalcode: ");
-            var postalCode = Console.ReadLine();
-
-            Console.Write("Enter City: ");
-            var city = Console.ReadLine();
+            var streetName = GetValidStringUserInput("Enter street name: ");
+            var postalCode = GetValidStringUserInput("Enter postal code: ");
+            var city = GetValidStringUserInput("Enter city: ");
 
             var existingAddress = _addressService.GetOneAddress(x => x.Street == streetName &&  x.PostalCode == postalCode && x.City == city);
             if(existingAddress == null)
@@ -603,14 +529,17 @@ public class MenuService
                 Console.WriteLine($"Id: {address.Id}. Street name: {address.Street}");
                 Console.WriteLine("______________________________________________________");
             }
-            Console.Write("Enter id to view details: ");
-            var addressId = int.Parse(Console.ReadLine()!);
+            var addressId = GetValidIdUserInput("Enter id to view details: ");
 
             var addressEntity = _addressService.GetOneAddress(x => x.Id ==  addressId);
 
             if(addressEntity != null)
             {
                 Console.WriteLine($"Id: {addressEntity.Id}. Street name: {addressEntity.Street} Postal code: {addressEntity.PostalCode} City: {addressEntity.City}");
+            }
+            else
+            {
+                Console.WriteLine("No address found");
             }
             PressToContinue();
         }
@@ -645,13 +574,19 @@ public class MenuService
             {
                 Console.WriteLine($"Id: {address.Id}. Street name: {address.Street}, Postalcode: {address.PostalCode}, City: {address.City})");
             }
-            Console.Write("\nEnter id for the address you want to update: ");
-            var addressId = int.Parse(Console.ReadLine()!);
+
+            var addressId = GetValidIdUserInput("\nEnter id for the address you want to update: ");
 
             var addressEntity = _addressService.GetOneAddress(x => x.Id == addressId);
+            if (addressEntity == null)
+            {
+                Console.WriteLine("No address found, try again");
+                PressToContinue();
+                return;
+            }
             if (AddressHasCustomers(addressId))
             {
-                // hämta kunderna kopplade till den valda adressen och skriver ut dem
+                //gets the customers associated with specified address and display
                 var customersOnAddress = _customerService.GetAllCustomers().Where(x => x.Address.Id == addressId);
 
                 Console.WriteLine("Customers on specific address: ");
@@ -660,8 +595,7 @@ public class MenuService
                     Console.WriteLine($"Id: {customer.Id}. Firstname: {customer.FirstName}, Lastname: {customer.LastName}, Email: {customer.Email}");
                 }
 
-                Console.Write("Enter customer´s id you want to update the address for: ");
-                var customerId = int.Parse(Console.ReadLine()!);
+                var customerId = GetValidIdUserInput("Enter customer´s id you want to update the address for: ");
 
                 var customerEntity = _customerService.GetOneCustomer(x => x.Id == customerId && x.Address.Id == addressId);
 
@@ -673,32 +607,9 @@ public class MenuService
                     Console.WriteLine("\nSelected address:");
                     Console.WriteLine($"Id: {addressEntity.Id}. Street name: {addressEntity.Street}, Postalcode: {addressEntity.PostalCode}, City: {addressEntity.City})");
 
-                    Console.Write("\nEnter new street name: ");
-                    var newStreetInput = Console.ReadLine();
-                    if (string.IsNullOrEmpty(newStreetInput))
-                    {
-                        Console.WriteLine("You need to enter a streetname");
-                        PressToContinue();
-                        return;
-                    }
-
-                    Console.Write("\nEnter new postalcode: ");
-                    var newPostalCodeInput = Console.ReadLine();
-                    if (string.IsNullOrEmpty(newPostalCodeInput))
-                    {
-                        Console.WriteLine("You need to enter a postalcode");
-                        PressToContinue();
-                        return;
-                    }
-
-                    Console.Write("\nEnter new city: ");
-                    var newCityInput = Console.ReadLine();
-                    if (string.IsNullOrEmpty(newCityInput))
-                    {
-                        Console.WriteLine("You need to enter a city");
-                        PressToContinue();
-                        return;
-                    }
+                    var newStreetInput = GetValidStringUserInput("\nEnter new street name: ");
+                    var newPostalCodeInput = GetValidStringUserInput("\nEnter new postal code: ");
+                    var newCityInput = GetValidStringUserInput("\nEnter new city: ");
 
                     // kollar om den nya adressen finns i databasen 
                     var existingAddress = _addressService.GetOneAddress(x => x.Street == newStreetInput && x.PostalCode == newPostalCodeInput && x.City == newCityInput);
@@ -730,36 +641,13 @@ public class MenuService
                 Console.WriteLine("\nSelected address:");
                 Console.WriteLine($"Id: {addressEntity.Id}. Street name: {addressEntity.Street}, Postalcode: {addressEntity.PostalCode}, City: {addressEntity.City})");
 
-                Console.Write("\nEnter new street name: ");
-                var newStreetInput = Console.ReadLine();
-                if (string.IsNullOrEmpty(newStreetInput))
-                {
-                    Console.WriteLine("You need to enter a streetname");
-                    PressToContinue();
-                    return;
-                }
+                var newStreetInput = GetValidStringUserInput("\nEnter new street name: ");
+                var newPostalCodeInput = GetValidStringUserInput("\nEnter new postal code: ");
+                var newCityInput = GetValidStringUserInput("\nEnter new city: ");
 
-                Console.Write("\nEnter new postalcode: ");
-                var newPostalCodeInput = Console.ReadLine();
-                if (string.IsNullOrEmpty(newPostalCodeInput))
-                {
-                    Console.WriteLine("You need to enter a postalcode");
-                    PressToContinue();
-                    return;
-                }
-
-                Console.Write("\nEnter new city: ");
-                var newCityInput = Console.ReadLine();
-                if (string.IsNullOrEmpty(newCityInput))
-                {
-                    Console.WriteLine("You need to enter a city");
-                    PressToContinue();
-                    return;
-                }
-
-                // Kontrollera om den nya adressen redan finns i databasen
+                // Check if the new address already exisits 
                 var existingAddress = _addressService.GetOneAddress(x => x.Street == newStreetInput && x.PostalCode == newPostalCodeInput && x.City == newCityInput);
-
+                //if the new address doesn't exist, creates a new addressentity
                 if (existingAddress == null)
                 {
                     addressEntity.Street = newStreetInput;
@@ -798,8 +686,7 @@ public class MenuService
                     Console.WriteLine("______________________________________________________");
                 }
 
-                Console.Write("Enter id to delete address: ");
-                var inputId = int.Parse(Console.ReadLine()!);
+                var inputId = GetValidIdUserInput("Enter id to delete address: ");
 
                 if(!AddressHasCustomers(inputId))
                 {
@@ -828,15 +715,15 @@ public class MenuService
     }
 
     /// <summary>
-    ///     Checks if the addressEntity with specified addressId has associated customers
+    ///     Checks if there is customer associated with the address based on specified addressId
     /// </summary>
     /// <param name="addressId">The id of the addressentity to check</param>
-    /// <returns>True if the addressEntity has associated customers, else false</returns>
+    /// <returns>True if there is customers associated with address entity, else false</returns>
     public bool AddressHasCustomers(int addressId)
     {
         try
         {
-            //hömta kunder kopplade till addressen
+            //gets customers associated with the address
             var customerInAddress = _customerService.GetAllCustomers().Where(x => x.AddressId == addressId);
             if (customerInAddress.Any())
             {
@@ -856,52 +743,53 @@ public class MenuService
     {
         try
         {
-            ClearAndTitle("Role Menu");
-
-
-            Console.WriteLine("1. Create Role");
-            Console.WriteLine("2. Get One Role");
-            Console.WriteLine("3. Get All Roles");
-            Console.WriteLine("4. Update Role");
-            Console.WriteLine("5. Delete Role");
-
-            Console.WriteLine("9. Back to main menu");
-
-            Console.Write("Enter your option: ");
-            var option = Console.ReadLine();
-
-            switch (option)
+            while(true)
             {
-                case "1":
-                    CreateRoleMenu();
-                    break;
+                ClearAndTitle("Role Menu");
 
-                case "2":
-                    GetOneRoleMenu();
-                    break;
+                Console.WriteLine("1. Create Role");
+                Console.WriteLine("2. Get One Role");
+                Console.WriteLine("3. Get All Roles");
+                Console.WriteLine("4. Update Role");
+                Console.WriteLine("5. Delete Role");
 
-                case "3":
-                    GetAllRolesMenu();
-                    break;
+                Console.WriteLine("\n9. Back to main menu");
 
-                case "4":
-                    UpdateRoleMenu();
-                    break;
+                Console.Write("Enter your option: ");
+                var option = Console.ReadLine();
 
-                case "5":
-                    DeleteSpecificRoleMenu();
-                    break;
+                switch (option)
+                {
+                    case "1":
+                        CreateRoleMenu();
+                        break;
 
-                case "9":
-                    StartMenu();
-                    break;
+                    case "2":
+                        GetOneRoleMenu();
+                        break;
 
-                default:
-                    Console.WriteLine("Invalid choice, try again");
-                    PressToContinue();
-                    break;
+                    case "3":
+                        GetAllRolesMenu();
+                        break;
+
+                    case "4":
+                        UpdateRoleMenu();
+                        break;
+
+                    case "5":
+                        DeleteSpecificRoleMenu();
+                        break;
+
+                    case "9":
+                        StartMenu();
+                        break;
+
+                    default:
+                        Console.WriteLine("Invalid choice, try again");
+                        PressToContinue();
+                        break;
+                }
             }
-
         }
         catch (Exception ex) { Console.WriteLine("ERROR :: " + ex.Message); }
     }
@@ -912,8 +800,7 @@ public class MenuService
         {
             ClearAndTitle("Create Role");
 
-            Console.Write("Enter Role name: ");
-            var roleName = Console.ReadLine()!.ToLower();
+            var roleName = GetValidStringUserInput("Enter role name: ");
 
             var existingRole = _roleService.GetOneRole(x => x.RoleName == roleName);
 
@@ -948,8 +835,7 @@ public class MenuService
                 Console.WriteLine($"{role.Id}. Role name: {role.RoleName}");
                 Console.WriteLine("______________________________________________________");
             }
-            Console.Write("Enter id: ");
-            var roleId = int.Parse(Console.ReadLine()!);
+            var roleId = GetValidIdUserInput("Enter role name: ");
 
             var roleEntity = _roleService.GetOneRole(x => x.Id == roleId);
             if(roleEntity != null)
@@ -1004,15 +890,15 @@ public class MenuService
                 Console.WriteLine($"RoleId: {role.Id}, RoleName: {role.RoleName}");
                 Console.WriteLine("______________________________________________________");
             }
-            Console.Write("Enter id for the role you want to update: ");
-            var roleId = int.Parse(Console.ReadLine()!);
+
+            var roleId = GetValidIdUserInput("Enter id for the role you want to update: ");
 
             var roleEntity = _roleService.GetOneRole(x => x.Id == roleId);
             if (roleEntity != null)
             {
                 Console.WriteLine($"RoleId: {roleEntity.Id}. Role name: {roleEntity.RoleName} ");
 
-                if (roleEntity.Customers.Any())
+                if (RoleHasCustomers(roleId))
                 {
                     Console.WriteLine("\nCustomers connected to role:");
                     foreach (var customer in roleEntity.Customers)
@@ -1020,8 +906,9 @@ public class MenuService
                         Console.WriteLine($"customer id: {customer.Id}, Customer name: {customer.FirstName} {customer.LastName} Email: {customer.Email}");
                         Console.WriteLine("______________________________________________________");
                     }
-                    Console.Write("Enter customer´s id you want to update role for: ");
-                    var customerId = int.Parse(Console.ReadLine()!);
+
+                    var customerId = GetValidIdUserInput("Enter customer´s id to update role: ");
+
 
                     var customerEntity = _customerService.GetOneCustomer(x => x.Id == customerId);
                     if (customerEntity != null)
@@ -1029,35 +916,50 @@ public class MenuService
                         Console.WriteLine("\nSelected customer:");
                         Console.WriteLine($"Customer id: {customerEntity.Id}, customer name: {customerEntity.FirstName} {customerEntity.LastName}, Email: {customerEntity.Email}");
 
-                        Console.Write("\nEnter new Role name: ");
-                        var roleName = Console.ReadLine()!;
+                        string roleName = GetValidStringUserInput("\nEnter new role name: ");
                         if(string.IsNullOrEmpty(roleName) || string.IsNullOrWhiteSpace(roleName))
                         {
                             Console.WriteLine("You have to enter a role name");
                             PressToContinue();
                             return;
                         }
-
-                        //kolla om uppdatederade rollen finns i databasen
+                        //Checks if role already exists in databse, if not create a new role entity
                         var existingRole = _roleService.GetOneRole(x => x.RoleName == roleName);
                         if(existingRole == null)
                         {
-                            //skapa ny roll
                             existingRole = new RoleEntity
                             {
                                 RoleName = roleName!
                             };
                         }
-                        //uppdatera kundens rollnamn
                         customerEntity.Role = existingRole;
                         _customerService.UpdateCustomer(customerEntity);
                         Console.WriteLine("Updated successfully!");
+                    }
+                    else
+                    {
+                        Console.WriteLine("No customer found, try again");
                     }
                 }
                 else
                 {
                     Console.WriteLine("No customers is currently in this role");
+                    var roleName = GetValidStringUserInput("\nChange role name: ");
+                    if(!string.IsNullOrWhiteSpace(roleName))
+                    {
+                        roleEntity.RoleName = roleName;
+                        _roleService.UpdateRole(roleEntity);
+                        Console.WriteLine("\nRole updated successfully");
+                    }
+                    else
+                    {
+                        Console.WriteLine("Something went wrong, try again!");
+                    }
                 }
+            }
+            else
+            {
+                Console.WriteLine("No role found, try again");
             }
             PressToContinue();
         }
@@ -1080,8 +982,7 @@ public class MenuService
                     Console.WriteLine("______________________________________________________");
                 }
 
-                Console.Write("Enter id to delete role: ");
-                var inputId = int.Parse(Console.ReadLine()!);
+                var inputId = GetValidIdUserInput("Enter id to delete role: ");
 
                 if (!RoleHasCustomers(inputId))
                 {
@@ -1097,7 +998,7 @@ public class MenuService
                 }
                 else
                 {
-                    Console.WriteLine("Role ís not empty, make sure to remove all customers before deleting role");
+                    Console.WriteLine("Role is not empty, make sure to remove all customers before deleting role");
                 }
             }
             else
@@ -1110,15 +1011,15 @@ public class MenuService
     }
 
     /// <summary>
-    ///     Checks if the roleEntity with specified roleId has associated customers
+    ///     Checks if there is customer associated with the role based on specified roleId
     /// </summary>
     /// <param name="roleId">The id of the roleentity to check</param>
-    /// <returns>True if the roleEntity has associated customers, else false</returns>
+    /// <returns>True if there is customers associated with role entity, else false</returns>
     public bool RoleHasCustomers(int roleId)
     {
         try
         {
-            //hömta kunder kopplade till addressen
+            //gets customers associated with specific role
             var customerInAddress = _customerService.GetAllCustomers().Where(x => x.RoleId == roleId);
             if (customerInAddress.Any())
             {
@@ -1150,21 +1051,7 @@ public class MenuService
         }
     }
 
-    private void ClearAndTitle(string title)
-    {
-        Console.Clear();
-        Console.WriteLine($"{title}\n\n");
-    }
-    private void PressToContinue()
-    {
-        Console.WriteLine("\nPress any key to continue");
-        Console.ReadKey();
-    }
-
-
-
-
-    // PRODUCT CATALOG
+    //<<<<<<<<<<<<<<<<<<<<<<PRODUCT CATALOG>>>>>>>>>>>>>>>>>>>>>>>>
 
     public void ProductMenu()
     {
@@ -1213,7 +1100,6 @@ public class MenuService
                     break;
             }
         }
-
     }
 
     public void CreateProductMenu()
@@ -1222,9 +1108,8 @@ public class MenuService
         {
             ClearAndTitle("Create Product");
 
-            Console.Write("Enter productname: ");
-            var productName = Console.ReadLine()!.ToLower();
-            // Kontrollera om produkten redan finns i databasen
+            var productName = GetValidStringUserInput("Enter product name: ");
+            //Check if product already is in database
             var existingProduct = _productService.GetOneProduct(x => x.ProductName == productName);
             if (existingProduct != null)
             {
@@ -1233,23 +1118,35 @@ public class MenuService
                 return;
             }
 
+            decimal productPrice;
+            while (true)
+            {
+                Console.Write("Enter product price: ");
+                string userInput = Console.ReadLine()!;
 
-            Console.Write("Enter product price: ");
-            var productPrice = decimal.Parse(Console.ReadLine()!);
+                if (string.IsNullOrWhiteSpace(userInput))
+                {
+                    Console.WriteLine("No input provided. Please try again.");
+                }
+                else if (!decimal.TryParse(userInput, out productPrice))
+                {
+                    Console.WriteLine("Invalid input. Please enter a valid decimal number.");
+                }
+                else if (productPrice <= 0)
+                {
+                    Console.WriteLine("Price must be greater than zero. Please try again.");
+                }
+                else
+                {
+                    break;
+                }
+            }
 
+            var categoryName = GetValidStringUserInput("Enter category name: ");
+            var manufacureName = GetValidStringUserInput("Enter manufacture name: ");
+            var ingress = GetValidStringUserInput("Enter description ingress: ");
 
-            Console.Write("Enter category: ");
-            var categoryName = Console.ReadLine()!.ToLower();
-
-
-            Console.Write("Enter manufacture: ");
-            var manufacureName = Console.ReadLine()!.ToLower();
-
-
-            Console.Write("Enter ingress: ");
-            var ingress = Console.ReadLine()!.ToLower();
-
-            Console.Write("Enter description(nullable): ");
+            Console.Write("Enter description (optional): ");
             var descriptionText = Console.ReadLine()!.ToLower();
 
             var productDto = _productService.CreateProduct(new CreateProductDto {
@@ -1262,13 +1159,11 @@ public class MenuService
             });
             if (productDto != null)
             {
-                //Console.Clear();
                 Console.WriteLine($"Product: {productName} has been added");
                 PressToContinue();
             }
             else
             {
-                //Console.Clear();
                 Console.WriteLine("Something went wrong. Product has not been added");
                 PressToContinue();
             }
@@ -1278,39 +1173,29 @@ public class MenuService
 
     public void GetOneProductMenu()
     {
-
         ClearAndTitle("Get One Product");
 
         DisplayProductIdAndName();
-        Console.Write("Enter id to see details: ");
-        var productId = Console.ReadLine();
 
-        if (int.TryParse(productId, out int inputId))
+        var productId = GetValidIdUserInput("Enter id to see details: ");
+        
+        var selectedProduct = _productService.GetOneProduct(x => x.Id == productId);
+        if (selectedProduct != null)
         {
-            var selectedProduct = _productService.GetOneProduct(x => x.Id == inputId);
-            if (selectedProduct != null)
-            {
-                Console.WriteLine($"Id: {selectedProduct.Id}, Productname: {selectedProduct.ProductName}, Price: {selectedProduct.ProductPrice}, Category: {selectedProduct.Category.CategoryName}, Manufacture: {selectedProduct.Manufacture.ManufactureName}, Description ingress: {selectedProduct.Description.Ingress}, Description text: {selectedProduct.Description.DescriptionText} ");
-
-                PressToContinue();
-            }
-            else
-            {
-                Console.WriteLine("No product was found!");
-            }
+            Console.WriteLine($"Id: {selectedProduct.Id}, Productname: {selectedProduct.ProductName}, Price: {selectedProduct.ProductPrice}, Category: {selectedProduct.Category.CategoryName}, Manufacture: {selectedProduct.Manufacture.ManufactureName}, Description ingress: {selectedProduct.Description.Ingress}, Description text: {selectedProduct.Description.DescriptionText} ");
         }
         else
         {
-            Console.Write("Invalid input");
+            Console.WriteLine("No product was found!");
         }
+        PressToContinue();
     }
 
     public void GetAllProductsMenu()
     {
         try
         {
-            ClearAndTitle("ALL PRODUCTS");
-
+            ClearAndTitle("All Products");
 
             var products = _productService.GetAllProducts();
 
@@ -1326,8 +1211,6 @@ public class MenuService
                 Console.WriteLine("______________________________________________________________________________________________");
             }
             PressToContinue();
-
-
         }
         catch (Exception ex) { Console.WriteLine("ERROR :: " + ex.Message); }
     }
@@ -1336,67 +1219,55 @@ public class MenuService
     {
         try
         {
-            ClearAndTitle("Update Category");
+            ClearAndTitle("Update Product");
 
-            var categories = _categoryService.GetAllCategories();
-            foreach (var category in categories)
+            DisplayProductIdAndName();
+
+            var productId = GetValidIdUserInput("Enter id for the product you want to update: ");
+
+            var productEntity = _productService.GetOneProduct(x => x.Id == productId);
+            if (productEntity != null)
             {
-                Console.WriteLine($"Category id: {category.Id} Category name: {category.CategoryName}");
-                Console.WriteLine("______________________________________________________");
-            }
+                Console.WriteLine($"Selected product: \nproduct id: {productEntity.Id}. Product name: {productEntity.ProductName}, product price: {productEntity.ProductPrice}");
 
-            Console.Write("Enter id for the category you want to update: ");
-            var categoryId = int.Parse( Console.ReadLine()!);
+                var newProductName = GetValidStringUserInput("\nEnter new product name: ");
 
-            var categoryEntity = _categoryService.GetOneCategory(x => x.Id == categoryId);
-            if(categoryEntity != null)
-            {
-                Console.WriteLine($"Selected Category: \nCategory id: {categoryEntity.Id} Category name: {categoryEntity.CategoryName}");
-
-                if(categoryEntity.Products.Any())
+                decimal newProductPrice;
+                while (true)
                 {
-                    Console.WriteLine("\nProducts connected to category: ");
-                    foreach(var product in categoryEntity.Products)
+                    Console.Write("Enter new product price: ");
+                    string userInput = Console.ReadLine()!;
+
+                    if (string.IsNullOrWhiteSpace(userInput))
                     {
-                        Console.WriteLine($"Product id: {product.Id}, product name: {product.ProductName} price: {product.ProductPrice}");
-                        Console.WriteLine("______________________________________________________");
+                        Console.WriteLine("No input provided. Please try again.");
                     }
-                    Console.Write("Enter product´s id to update category for specific product: ");
-                    var productId = int.Parse( Console.ReadLine()!);
-
-                    var productEntity = _productService.GetOneProduct(x => x.Id == productId);
-                    if(productEntity != null)
+                    else if (!decimal.TryParse(userInput, out newProductPrice))
                     {
-                        Console.WriteLine("Selected product: ");
-                        Console.WriteLine($"Product id: {productEntity.Id}. Product name: {productEntity.ProductName}, price: {productEntity.ProductPrice}, ((category: {productEntity.Category.CategoryName}))");
-
-                        Console.Write("Enter new Category name: ");
-                        var newCategoryName = Console.ReadLine()!;
-
-                        if(string.IsNullOrWhiteSpace(newCategoryName))
-                        {
-                            Console.WriteLine("You have to enter a category name");
-                            PressToContinue();
-                            return;
-                        }
-
-                        var existingCategory = _categoryService.GetOneCategory(x => x.CategoryName == newCategoryName);
-                        if (existingCategory == null)
-                        {
-                            existingCategory = new Category { CategoryName = newCategoryName };
-                        }
-                        productEntity.Category = existingCategory;
-                        _productService.UpdateProduct(productEntity);
-                        Console.WriteLine("Updated successfully");
+                        Console.WriteLine("Invalid input. Please enter a valid decimal number.");
                     }
+                    else if (newProductPrice <= 0)
+                    {
+                        Console.WriteLine("Price must be greater than zero. Please try again.");
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+                productEntity.ProductName = newProductName;
+                productEntity.ProductPrice = newProductPrice;
+                var result = _productService.UpdateProduct(productEntity);
+                if(result != null)
+                {
+                    Console.WriteLine("Updated product successfully");
                 }
                 else
                 {
-                    Console.WriteLine("Failed to update");
+                    Console.WriteLine("Something went wrong, try again");
                 }
                 PressToContinue();
             }
-            PressToContinue();
         }
         catch (Exception ex) { Console.WriteLine("ERROR :: " + ex.Message); }
     }
@@ -1405,16 +1276,13 @@ public class MenuService
     {
         try
         {
-            ClearAndTitle("DELETE PRODUCT");
+            ClearAndTitle("Delete Product");
             DisplayProductIdAndName();
 
-            Console.Write("Enter id to delete product: ");
-            var input = int.Parse(Console.ReadLine()!);
+            var productId = GetValidIdUserInput("Enter id to delete product: ");
 
-            var productEntity = _productService.GetOneProduct(x => x.Id == input);
+            var productEntity = _productService.GetOneProduct(x => x.Id == productId);
 
-
-            //var result = _productService.DeleteProduct(x => x.Id == input);
             if(productEntity != null)
             {
                 Console.WriteLine($"Are you sure you want to delete {productEntity.ProductName}? (y/n)");
@@ -1431,61 +1299,62 @@ public class MenuService
             }
             else
             {
-                Console.WriteLine("Something went wrong");
+                Console.WriteLine("Product not found");
             }
             PressToContinue();
         }
         catch (Exception ex) { Console.WriteLine("ERROR :: " + ex.Message); }
     }
 
-
-
     //<<<<<<<<<<<<<<<<<<<<<<<<<<<<Category>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
     public void CategoryMenu()
     {
         try
         {
-            ClearAndTitle("Category Menu");
-
-            Console.WriteLine("1. Create Category");
-            Console.WriteLine("2. Get One Category");
-            Console.WriteLine("3. Get All Categories");
-            Console.WriteLine("4. Update Category");
-            Console.WriteLine("5. Delete Category");
-
-            Console.WriteLine("\n9. Back to stat menu");
-            Console.Write("\n Enter your choice: ");
-            var option = Console.ReadLine();
-
-            switch (option)
+            while(true)
             {
-                case "1":
-                    CreateCategoryMenu();
-                    break;
-                case "2":
-                    GetOneCategoryMenu();
-                    break;
+                ClearAndTitle("Category Menu");
 
-                case "3":
-                    GetAllCategoriesMenu();
-                    break;
+                Console.WriteLine("1. Create Category");
+                Console.WriteLine("2. Get One Category");
+                Console.WriteLine("3. Get All Categories");
+                Console.WriteLine("4. Update Category");
+                Console.WriteLine("5. Delete Category");
 
-                case "4":
-                    UpdateCategoryMenu();
-                    break;
+                Console.WriteLine("\n9. Back to stat menu");
+                Console.Write("\n Enter your choice: ");
+                var option = Console.ReadLine();
 
-                case "5":
-                    DeleteCategoryMenu();
-                    break;
+                switch (option)
+                {
+                    case "1":
+                        CreateCategoryMenu();
+                        break;
+                    case "2":
+                        GetOneCategoryMenu();
+                        break;
 
-                case "9":
-                    StartMenu();
-                    break;
+                    case "3":
+                        GetAllCategoriesMenu();
+                        break;
 
-                default:
-                    Console.WriteLine("Invalid option");
-                    PressToContinue();
-                    break;
+                    case "4":
+                        UpdateCategoryMenu();
+                        break;
+
+                    case "5":
+                        DeleteCategoryMenu();
+                        break;
+
+                    case "9":
+                        StartMenu();
+                        break;
+
+                    default:
+                        Console.WriteLine("Invalid option");
+                        PressToContinue();
+                        break;
+                }
             }
         }
         catch (Exception ex) { Console.WriteLine("ERROR :: " + ex.Message); }
@@ -1496,9 +1365,8 @@ public class MenuService
         {
             ClearAndTitle("Create Category");
 
-            Console.Write("Enter category name: ");
-            var categoryName = Console.ReadLine()!.ToLower();
-            // Kontrollera om kategorin redan finns i databasen
+            var categoryName = GetValidStringUserInput("Enter category name: ");
+            //checks if category already exisits
             var existingCategory = _categoryService.GetOneCategory(x => x.CategoryName == categoryName);
             if (existingCategory != null)
             {
@@ -1506,12 +1374,10 @@ public class MenuService
                 PressToContinue();
                 return;
             }
-
             var newCategoryName = _categoryService.CreateCategory(new Category { CategoryName = categoryName });
             if(newCategoryName != null)
             {
                 Console.WriteLine($"Category: {newCategoryName.CategoryName} has been added");
-                PressToContinue();
             }
             else
             {
@@ -1533,31 +1399,21 @@ public class MenuService
                 Console.WriteLine($"Category id: {category.Id}. Category name: {category.CategoryName}");
             }
 
-            Console.Write("Enter id to see details: ");
-            var categoryId = Console.ReadLine();
-
-            if (int.TryParse(categoryId, out int inputId))
+            var categoryId = GetValidIdUserInput("Enter id to see details: ");
+            var selectedCategory = _categoryService.GetOneCategory(x => x.Id == categoryId);
+            if (selectedCategory != null)
             {
-                var selectedCategory = _categoryService.GetOneCategory(x => x.Id == inputId);
-                if (selectedCategory != null)
+                Console.WriteLine($"Id: {selectedCategory.Id}, Category name: {selectedCategory.CategoryName}");
+                Console.WriteLine($"Products conneted to the category: ");
+                foreach (var product in selectedCategory.Products)
                 {
-                    Console.WriteLine($"Id: {selectedCategory.Id}, Category name: {selectedCategory.CategoryName}");
-                    Console.WriteLine($"Products conneted to the category: ");
-                    foreach(var product in selectedCategory.Products)
-                    {
-                        Console.WriteLine($"Product id: {product.Id}, ProductName: {product.ProductName}, Price: {product.ProductPrice}");
-                    }
-
-                    PressToContinue();
+                    Console.WriteLine($"Product id: {product.Id}, ProductName: {product.ProductName}, Price: {product.ProductPrice}");
                 }
-                else
-                {
-                    Console.WriteLine("No product was found!");
-                }
+                PressToContinue();
             }
             else
             {
-                Console.Write("Invalid input");
+                Console.WriteLine("No product was found!");
             }
         }
         catch (Exception ex) { Console.WriteLine("ERROR :: " + ex.Message); }
@@ -1591,15 +1447,14 @@ public class MenuService
                 Console.WriteLine("______________________________________________________");
             }
 
-            Console.WriteLine("Enter id for the category you want to update: ");
-            var categoryId = int.Parse(Console.ReadLine()!);
+            var categoryId = GetValidIdUserInput("Enter id for the category you want to update: ");
 
             var categoryEntity = _categoryService.GetOneCategory(x => x.Id == categoryId);
-            if(categoryEntity != null)
+            if (categoryEntity != null)
             {
                 Console.WriteLine($"Category id: {categoryEntity.Id}, Category name: {categoryEntity.CategoryName}");
 
-                if(HasProducts(categoryId))
+                if (HasProducts(categoryId))
                 {
                     Console.WriteLine($"\n Products associated with category:");
                     foreach (var product in categoryEntity.Products)
@@ -1608,8 +1463,7 @@ public class MenuService
                         Console.WriteLine("______________________________________________________");
                     }
 
-                    Console.WriteLine("Enter product´s id you want to update category for: ");
-                    var productId = int.Parse(Console.ReadLine()!);
+                    var productId = GetValidIdUserInput("Enter product´s id you to update category: ");
 
                     var productEntity = _productService.GetOneProduct(x => x.Id == productId);
                     if (productEntity != null)
@@ -1617,14 +1471,7 @@ public class MenuService
                         Console.WriteLine("Selected product:");
                         Console.WriteLine($"Product id: {productEntity.Id}. Product name: {productEntity.ProductName}, price: {productEntity.ProductPrice}");
 
-                        Console.Write("\nEnter category name: ");
-                        var categoryName = Console.ReadLine();
-                        if (string.IsNullOrWhiteSpace(categoryName))
-                        {
-                            Console.WriteLine("You have to enter a category name");
-                            PressToContinue();
-                            return;
-                        }
+                        var categoryName = GetValidStringUserInput("\nEnter category name: ");
                         var existingCategory = _categoryService.GetOneCategory(x => x.CategoryName == categoryName);
                         if (existingCategory == null)
                         {
@@ -1641,18 +1488,11 @@ public class MenuService
                     Console.WriteLine("\nSelected category:");
                     Console.WriteLine($"Id: {categoryEntity.Id}. Category name: {categoryEntity.CategoryName})");
 
-                    Console.Write("Enter new category name: ");
-                    var newCategoryName = Console.ReadLine();
-                    if (string.IsNullOrEmpty(newCategoryName))
-                    {
-                        Console.WriteLine("You need to enter a streetname");
-                        PressToContinue();
-                        return;
-                    }
+                    var newCategoryName = GetValidStringUserInput("Enter new category name: ");
 
                     //kolla om den nya kategorin redan finns i database
                     var existingCategory = _categoryService.GetOneCategory(x => x.CategoryName == newCategoryName);
-                    if(existingCategory == null)
+                    if (existingCategory == null)
                     {
                         categoryEntity.CategoryName = newCategoryName;
 
@@ -1671,7 +1511,7 @@ public class MenuService
             }
             PressToContinue();
         }
-        catch(Exception ex) { Console.WriteLine("ERROR :: "+ ex.Message); }
+        catch (Exception ex) { Console.WriteLine("ERROR :: " + ex.Message); }
     }
     public void DeleteCategoryMenu()
     {
@@ -1687,12 +1527,11 @@ public class MenuService
                     Console.WriteLine("______________________________________________________");
                 }
 
-                Console.WriteLine("Enter id to delete category");
-                var input = int.Parse(Console.ReadLine()!);
+                var categoryId = GetValidIdUserInput("Enter id to delete category: ");
 
-                if (!HasProducts(input))
+                if (!HasProducts(categoryId))
                 {
-                    var deleted = _categoryService.DeleteCategory(x => x.Id == input);
+                    var deleted = _categoryService.DeleteCategory(x => x.Id == categoryId);
                     if(deleted)
                     {
                         Console.WriteLine($"Category has been deleted successfully");
@@ -1715,7 +1554,6 @@ public class MenuService
                 Console.WriteLine("Failed to delete category. The category still has products associated with it.");
                 PressToContinue();
             }
-
         }
         catch (Exception ex) { Console.WriteLine("ERROR :: " + ex.Message); }
     }
@@ -1723,16 +1561,13 @@ public class MenuService
     /// <summary>
     ///     Checks if there are any products associated wioth the specified category
     /// </summary>
-    /// <param name="categoryId">the if of the category to check for associated products</param>
+    /// <param name="categoryId">the id of the category to check for associated products</param>
     /// <returns>True if there is associated products, else false</returns>
     public bool HasProducts(int categoryId)
     {
         try
         {
-            //hämta produkter kopplade till kategorin
             var productsInCategory = _productService.GetAllProducts().Where(p => p.CategoryId == categoryId);
-
-            //kollar om det finns några kategorier i listan
             return productsInCategory.Any();
         }
         catch (Exception ex)
@@ -1743,56 +1578,56 @@ public class MenuService
     }
 
 
-
     //<<<<<<<<<<<<<<<<<<<<<<<<<<<<Manufacture>>>>>>>>>>>>>>>>>>>>>>>>>>>
     public void ManufactureMenu()
     {
         try
         {
-            ClearAndTitle("Manufacturer Menu");
-
-            Console.WriteLine("1. Create Manufacture");
-            Console.WriteLine("2. Get One Manufacture");
-            Console.WriteLine("3. Get All Manufacturer");
-            Console.WriteLine("4. Update Manufacture");
-            Console.WriteLine("5. Delete Manufacture");
-
-
-            Console.WriteLine("\n9. Back to main menu");
-            Console.Write("\n Enter your choice: ");
-            var option = Console.ReadLine();
-
-            switch (option)
+            while (true)
             {
-                case "1":
-                    CreateManufactureMenu();
-                    break;
-                case "2":
-                    GetOneManufactureMenu();
-                    break;
+                ClearAndTitle("Manufacturer Menu");
 
-                case "3":
-                    GetAllManufacturersMenu();
-                    break;
-
-                case "4":
-                    UpdateManufactureMenu();
-                    break;
-
-                case "5":
-                    DeleteManufactureMenu();
-                    break;
+                Console.WriteLine("1. Create Manufacture");
+                Console.WriteLine("2. Get One Manufacture");
+                Console.WriteLine("3. Get All Manufacturer");
+                Console.WriteLine("4. Update Manufacture");
+                Console.WriteLine("5. Delete Manufacture");
 
 
+                Console.WriteLine("\n9. Back to main menu");
+                Console.Write("\n Enter your choice: ");
+                var option = Console.ReadLine();
 
-                case "9":
-                    StartMenu();
-                    break;
+                switch (option)
+                {
+                    case "1":
+                        CreateManufactureMenu();
+                        break;
+                    case "2":
+                        GetOneManufactureMenu();
+                        break;
 
-                default:
-                    Console.WriteLine("Invalid option");
-                    PressToContinue();
-                    break;
+                    case "3":
+                        GetAllManufacturersMenu();
+                        break;
+
+                    case "4":
+                        UpdateManufactureMenu();
+                        break;
+
+                    case "5":
+                        DeleteManufactureMenu();
+                        break;
+
+                    case "9":
+                        StartMenu();
+                        break;
+
+                    default:
+                        Console.WriteLine("Invalid option");
+                        PressToContinue();
+                        break;
+                }
             }
         }
         catch (Exception ex) { Console.WriteLine("ERROR :: " + ex.Message); }
@@ -1804,10 +1639,9 @@ public class MenuService
         {
             ClearAndTitle("Create Manufacturer");
 
-            Console.Write("Enter Manufacture name: ");
-            var manufactureName = Console.ReadLine()!.ToLower();
+            var manufactureName = GetValidStringUserInput("Enter manufacurer name: ");
 
-            //kolla om tillverkaren redan finns i databasen
+            //Checks if manufacturer already exisits
             var existingManufacture = _manufactureService.GetOneManufacture(x => x.ManufactureName == manufactureName);
             if(existingManufacture != null)
             {
@@ -1841,9 +1675,9 @@ public class MenuService
             {
                 Console.WriteLine($"Manufacture id: {manufacture.Id}. Manufacture name: {manufacture.ManufactureName}");
             }
-            Console.Write("Enter id to se details: ");
-            var manufactureId = int.Parse(Console.ReadLine()!);
-            var selectedManufacture = _manufactureService.GetOneManufacture(x => x.Id == manufactureId);
+
+            var manufacureId = GetValidIdUserInput("Enter id to se details: ");
+            var selectedManufacture = _manufactureService.GetOneManufacture(x => x.Id == manufacureId);
             if(selectedManufacture != null)
             {
                 Console.WriteLine($"\nManufacture id: {selectedManufacture.Id}. Manufacture name: {selectedManufacture.ManufactureName}");
@@ -1887,33 +1721,26 @@ public class MenuService
             ClearAndTitle("Update Manufacture");
 
             var manufacturers = _manufactureService.GetAllManufactures();
-            foreach (var manufacture in manufacturers)
+            foreach(var manufacture in manufacturers )
             {
-                Console.WriteLine($"Manufacture id: {manufacture.Id}, Manufacture name: {manufacture.ManufactureName}");
-                Console.WriteLine("______________________________________________________");
+                Console.WriteLine($"Manufacture id: {manufacture.Id}. Manufacture name: {manufacture.ManufactureName}");
             }
-            Console.WriteLine("Enter id for the manufacture you want to update: ");
-            var manufactureId = int.Parse(Console.ReadLine()!);
+            var manufactureId = GetValidIdUserInput("\nEnter id for the manufacture you want to update: ");
 
             var manufactureEntity = _manufactureService.GetOneManufacture(x => x.Id == manufactureId);
             if (manufactureEntity != null)
             {
-                Console.WriteLine($"Manufacture id: {manufactureEntity.Id}, RoleName: {manufactureEntity.ManufactureName}");
+                Console.WriteLine($"Manufacture id: {manufactureEntity.Id}. Manufacture name: {manufactureEntity.ManufactureName}");
 
-                if (!manufactureEntity.Products.Any())
+                if (manufactureEntity.Products.Any())
                 {
-                    Console.WriteLine("No Products is currently in this manufacturer");
-                }
-                else
-                {
-                    Console.WriteLine("\n Products associated with manufacturers:");
+                    Console.WriteLine("Product associated with manufacure: ");
                     foreach (var product in manufactureEntity.Products)
                     {
                         Console.WriteLine($"Product id: {product.Id}. Product name: {product.ProductName}, price: {product.ProductPrice}");
                         Console.WriteLine("______________________________________________________");
                     }
-                    Console.WriteLine("Enter product´s id you want to update manufacturer for: ");
-                    var productId = int.Parse(Console.ReadLine()!);
+                    var productId = GetValidIdUserInput("Enter product´s id you to update manufacture: ");
 
                     var productEntity = _productService.GetOneProduct(x => x.Id == productId);
                     if (productEntity != null)
@@ -1921,14 +1748,7 @@ public class MenuService
                         Console.WriteLine("Selected product:");
                         Console.WriteLine($"Product id: {productEntity.Id}. Product name: {productEntity.ProductName}, price: {productEntity.ProductPrice}");
 
-                        Console.WriteLine("Enter manufacture name: ");
-                        var manufactureName = Console.ReadLine();
-                        if (string.IsNullOrWhiteSpace(manufactureName))
-                        {
-                            Console.WriteLine("You have to enter a role name");
-                            PressToContinue();
-                            return;
-                        }
+                        var manufactureName = GetValidStringUserInput("\nEnter manufacture name: ");
 
                         var existingManufacture = _manufactureService.GetOneManufacture(x => x.ManufactureName == manufactureName);
                         if (existingManufacture == null)
@@ -1941,15 +1761,35 @@ public class MenuService
                         Console.WriteLine("Updated successfully!");
                     }
                 }
-            }
+                else
+                {
+                    Console.WriteLine("\nSelected manufacturer: ");
+                    Console.WriteLine($"Manufacture id: {manufactureEntity.Id}. Manufacture name: {manufactureEntity.ManufactureName}");
 
+                    var newManufactureName = GetValidStringUserInput("Enter new manufacture name: ");
+
+                    var existingManufacture = _manufactureService.GetOneManufacture(x => x.ManufactureName == newManufactureName);
+                    if (existingManufacture == null)
+                    {
+                        manufactureEntity.ManufactureName = newManufactureName;
+                        _manufactureService.UpdateManufacture(manufactureEntity);
+                        Console.WriteLine("Updated manufacture successfully");
+                    }
+                    else
+                    {
+                        Console.WriteLine("Manufacture already exists");
+                    }
+                }
+            }
+            else
+            {
+                Console.WriteLine("No manufacture with that id was found");
+            }
             PressToContinue();
         }
-        catch (Exception ex)
-        {
-            Console.WriteLine("ERROR :: " + ex.Message);
-        }
+        catch(Exception ex) { Console.WriteLine("ERROR :: " + ex.Message); }
     }
+
 
     public void DeleteManufactureMenu()
     {
@@ -1965,12 +1805,11 @@ public class MenuService
                     Console.WriteLine("______________________________________________________");
                 }
 
-                Console.WriteLine("Enter id to delete manufacture");
-                var input = int.Parse(Console.ReadLine()!);
+                var manufactureId = GetValidIdUserInput("Enter id to delete manufacture: ");
 
-                if (!_manufactureService.HasProducts(input))
+                if (!_manufactureService.HasProducts(manufactureId))
                 {
-                    var deleted = _manufactureService.DeleteManufacture(x => x.Id == input);
+                    var deleted = _manufactureService.DeleteManufacture(x => x.Id == manufactureId);
                     if (deleted)
                     {
                         Console.WriteLine($"Manufacture has been deleted successfully");
@@ -1978,7 +1817,7 @@ public class MenuService
                     }
                     else
                     {
-                        Console.WriteLine("Something went wrong, try again!");
+                        Console.WriteLine("Manufacture id couldn't be found, try again");
                         PressToContinue();
                     }
                 }
@@ -1999,7 +1838,9 @@ public class MenuService
     }
 
 
-
+    /// <summary>
+    ///     Gets all products and display id and name
+    /// </summary>
     private void DisplayProductIdAndName()
     {
         var productEntity = _productService.GetAllProducts();
@@ -2018,58 +1859,59 @@ public class MenuService
     }
 
 
-    //<<<<<<<<<<<<<<<<<<<<<<<<<ORDERs>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+    //<<<<<<<<<<<<<<<<<<<<<<<<<ORDERS>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
     public void OrderMenu()
     {
         try
         {
-            ClearAndTitle("Order Menu");
-
-            Console.WriteLine("1. Create Order");
-            Console.WriteLine("2. Get One Order");
-            Console.WriteLine("3. Get All Orders");
-            Console.WriteLine("4. Update Order");
-            Console.WriteLine("5. Delete Order");
-
-            Console.WriteLine("9. Back to main menu");
-
-            var option = Console.ReadLine();
-
-            switch(option)
+            while (true)
             {
-                case "1":
-                    CreateOrderMenu();
-                    break;
+                ClearAndTitle("Order Menu");
 
-                case "2":
-                    GetOneOrderMenu();
-                    break;
+                Console.WriteLine("1. Create Order");
+                Console.WriteLine("2. Get One Order");
+                Console.WriteLine("3. Get All Orders");
+                Console.WriteLine("4. Update Order");
+                Console.WriteLine("5. Delete Order");
 
-                case "3":
-                    GetAllOrdersMenu();
-                    break;
+                Console.WriteLine("\n9. Back to main menu");
+                Console.Write("Enter option: ");
 
-                case "4":
-                    UpdateOrderMenu();
-                    break;
+                var option = Console.ReadLine();
 
-                case "5":
-                    DeleteOrderMenu();
-                    break;
+                switch (option)
+                {
+                    case "1":
+                        CreateOrderMenu();
+                        break;
 
-                case "9":
-                    StartMenu();
-                    break;
+                    case "2":
+                        GetOneOrderMenu();
+                        break;
 
-                default:
-                    Console.WriteLine("Invalid choice, try again");
-                    PressToContinue();
-                    break;
+                    case "3":
+                        GetAllOrdersMenu();
+                        break;
 
-            }
-        
-        
+                    case "4":
+                        UpdateOrderMenu();
+                        break;
+
+                    case "5":
+                        DeleteOrderMenu();
+                        break;
+
+                    case "9":
+                        StartMenu();
+                        break;
+
+                    default:
+                        Console.WriteLine("Invalid choice, try again");
+                        PressToContinue();
+                        break;
                 }
+            }
+        }     
         catch (Exception ex) { Console.WriteLine("ERROR :: " + ex.Message); }
     }
 
@@ -2080,24 +1922,43 @@ public class MenuService
             ClearAndTitle("Create Order Menu");
 
             var orderRows = new HashSet<OrderRowDto>();
-
+            // keeps adding products until user enters "order" to order products
             while (true)
             {
                 DisplayProductIdAndName();
 
-                Console.WriteLine("Enter product to add to orderrow. When done enter order to order products");
+                Console.Write("\nEnter product id to add to orderrow. When done, enter 'order' to order products: ");
                 var input = Console.ReadLine()!.ToLower();
+                if (string.IsNullOrEmpty(input))
+                {
+                    Console.WriteLine("You have to enter an id, try again!");
+                    PressToContinue();
+                    return;
+                }
+
                 if (input.Equals("order"))
                 {
                     break;
                 }
 
-                var productId = int.Parse(input);
+                if (!int.TryParse(input, out var productId))
+                {
+                    Console.WriteLine("Invalid input, you have to enter a id(number). Try again");
+                    PressToContinue();
+                    continue;
+                }
+
                 var product = _productService.GetOneProduct(x => x.Id == productId);
                 if (product != null)
                 {
                     Console.Write("Enter quantity: ");
-                    var quantity = int.Parse(Console.ReadLine()!);
+                    var quantityInput = Console.ReadLine();
+                    if (!int.TryParse(quantityInput, out var quantity) || quantity <= 0)
+                    {
+                        Console.WriteLine("Invalid input, quantity must be larger than 0, try again!");
+                        PressToContinue();
+                        continue;
+                    }
 
                     var orderRowDto = new OrderRowDto
                     {
@@ -2112,7 +1973,6 @@ public class MenuService
                     PressToContinue();
                 }
             }
-
             if (orderRows.Any())
             {
                 var newOrderDto = new NewOrderDto
@@ -2122,10 +1982,11 @@ public class MenuService
 
                 var order = _orderService.CreateOrder(newOrderDto);
             }
-
+            else
+            {
+                Console.WriteLine("Something went wrong, try again");
+            }
             PressToContinue();
-
-
         }
         catch (Exception ex) { Console.WriteLine("ERROR :: " + ex.Message); }
     }
@@ -2151,12 +2012,9 @@ public class MenuService
 
             var allOrderRows = _orderRowService.GetOrdersWithSameId();
 
-            Console.Write("Enter order id: ");
-            var input = int.Parse(Console.ReadLine()!);
+            var orderId = GetValidIdUserInput("Enter order id: ");
 
-            var order = _orderRowService.GetAllOrderRows().Where(x => x.OrderId == input);
-            //var order = _orderRowService.GetOneOrderRow(x => x.OrderId == input);
-
+            var order = _orderRowService.GetAllOrderRows().Where(x => x.OrderId == orderId);
 
             if (order.Any())
             {
@@ -2165,8 +2023,7 @@ public class MenuService
                     Console.WriteLine($"Id: {orderRow.Id}. Product: {orderRow.Product.ProductName}, Quantity: {orderRow.Quantity}, Date: {orderRow.Order.Orderdate}");
                 }
 
-                Console.WriteLine("\nEnter id to se details: ");
-                var orderRowId = int.Parse(Console.ReadLine()!);
+                var orderRowId = GetValidIdUserInput("\nEnter id to se details for specific product: ");
 
                 var specificOrderRow = _orderRowService.GetOneOrderRow(x => x.Id == orderRowId);
 
@@ -2182,7 +2039,7 @@ public class MenuService
             }
             else
             {
-                Console.WriteLine("Orderid not found");
+                Console.WriteLine("Order id was not found");
             }
 
             PressToContinue();
@@ -2197,13 +2054,12 @@ public class MenuService
             ClearAndTitle("Update Order");
 
             var allOrders = _orderRowService.GetOrdersWithSameId();
-
-            Console.Write("Enter id for the order you want to update: ");
-            var orderId = int.Parse(Console.ReadLine()!);
+            
+            int orderId = GetValidIdUserInput("\nEnter id for the order you want to update: ");
 
             if (allOrders.Any())
             {
-                var orderRows = allOrders.Where(o => o.OrderId == orderId).ToList();
+                var orderRows = allOrders.Where(x => x.OrderId == orderId).ToList();
                 if (orderRows.Any())
                 {
                     Console.WriteLine($"Products in Order id {orderId}:");
@@ -2211,17 +2067,15 @@ public class MenuService
                     {
                         Console.WriteLine($"Order Row id: {orderRow.Id}, ProductName: {orderRow.Product.ProductName}, Quantity: {orderRow.Quantity}");
                     }
+                    int orderRowId = GetValidIdUserInput("\nEnter Order Row id for the product you want to update: ");
 
-                    Console.WriteLine("Enter Order Row id for the product you want to update: ");
-                    var orderRowId = int.Parse(Console.ReadLine()!);
-
-                    var getOneOrderRow = orderRows.FirstOrDefault(o => o.Id == orderRowId);
+                    var getOneOrderRow = orderRows.FirstOrDefault(x => x.Id == orderRowId);
                     if (getOneOrderRow != null)
                     {
                         Console.WriteLine($"Selected orderrow: ");
                         Console.WriteLine($"Order Row id: {getOneOrderRow.Id}, ProductName: {getOneOrderRow.Product.ProductName}, Quantity: {getOneOrderRow.Quantity}");
 
-                        Console.WriteLine("Do you want to change product? (y/n)");
+                        Console.WriteLine("\nDo you want to change product? (y/n)");
                         var changeProduct = Console.ReadLine()!.ToLower();
                         if (changeProduct.Equals("y"))
                         {
@@ -2230,28 +2084,44 @@ public class MenuService
                             {
                                 Console.WriteLine($"product id: {product.Id}. Product name: {product.ProductName}");
                             }
-                            Console.Write("Enter product id to change current product: ");
-                            var productId = int.Parse(Console.ReadLine()!);
+                            int productId = GetValidIdUserInput("\nEnter product id to change curren product: ");
 
                             var productEntity = _productService.GetOneProduct(x => x.Id == productId);
                             if (productEntity != null)
                             {
-                                // Uppdatera den befintliga orderpostens produkt med den nya produkten
                                 getOneOrderRow.ProductId = productEntity.Id;
 
                                 Console.WriteLine($"New orderrow productname: {productEntity.ProductName}");
                             }
+                            else
+                            {
+                                Console.WriteLine("Invalid id, try again");
+                                PressToContinue();
+                                return;
+                            }
                         }
-                        Console.WriteLine("\nLeave empty if you dont want to change\n");
                         Console.Write("Enter new quantity: ");
-                        var newQuantityInput = int.Parse(Console.ReadLine()!);
-                        if (newQuantityInput > 0)
+
+                        int newQuantityInput;
+                        string userInput = Console.ReadLine()!;
+                        if(string.IsNullOrEmpty(userInput))
+                        {
+                            Console.WriteLine("No quantity provided, order row has not been updated, try again");
+                        }
+                        else if(!int.TryParse(userInput, out newQuantityInput))
+                        {
+                            Console.WriteLine("Invalid input. Order row was not updated, try again");
+                        }
+                        else if(newQuantityInput <= 0)
+                        {
+                            Console.WriteLine("Quantity has to be greater than 0");
+                        }
+                        else
                         {
                             getOneOrderRow.Quantity = newQuantityInput;
+                            _orderRowService.UpdateOrderRow(getOneOrderRow);
+                            Console.WriteLine("Order row updated successfully");
                         }
-
-                        _orderRowService.UpdateOrderRow(getOneOrderRow);
-                        Console.WriteLine("Order row updated successfully");
                     }
                     else
                     {
@@ -2278,17 +2148,16 @@ public class MenuService
             ClearAndTitle("Delete Order");
 
             var orderRows = _orderRowService.GetOrdersWithSameId();
-            Console.WriteLine("Which order do you want to delete?");
-            var inputId = int.Parse(Console.ReadLine()!);
+            var orderId = GetValidIdUserInput("Which order do you want to delete? ");
 
-            var result = _orderRowService.DeleteOrderRow(x => x.OrderId == inputId);
+            var result = _orderRowService.DeleteOrderRow(x => x.OrderId == orderId);
             if (result)
             {
-                Console.WriteLine($"Order with OrderId {inputId} has been deleted.");
+                Console.WriteLine($"Order with OrderId {orderId} has been deleted.");
             }
             else
             {
-                Console.WriteLine($"No order found with OrderId {inputId}.");
+                Console.WriteLine($"No order found with OrderId {orderId}.");
             }
 
             PressToContinue();
@@ -2296,56 +2165,59 @@ public class MenuService
         catch (Exception ex) { Console.WriteLine("ERROR :: " + ex.Message); }
     }
 
+  
+
 
     //<<<<<<<<<<<<<<<<<<<<Review Menu>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-
     public void ReviewMenu()
     {
         try
         {
-            ClearAndTitle("Review Menu");
-            Console.WriteLine("1. Create Review");
-            Console.WriteLine("2. Get Reviews For Specific Product");
-            Console.WriteLine("3. Get All Reviews");
-            Console.WriteLine("4. Update Review");
-            Console.WriteLine("5. Delete Review");
-
-            Console.WriteLine("9. Back to main menu");
-            Console.Write("Enter option: ");
-            var option = Console.ReadLine();
-
-            switch (option)
+            while(true)
             {
-                case "1":
-                    CreateReview();
-                    break;
+                ClearAndTitle("Review Menu");
+                Console.WriteLine("1. Create Review");
+                Console.WriteLine("2. Get Reviews For Specific Product");
+                Console.WriteLine("3. Get All Reviews");
+                Console.WriteLine("4. Update Review");
+                Console.WriteLine("5. Delete Review");
 
-                case "2":
-                    GetReviewsForOneProduct();
-                    break;
+                Console.WriteLine("\n9. Back to main menu");
+                Console.Write("Enter option: ");
+                var option = Console.ReadLine();
 
-                case "3":
-                    GetAllReviews();
-                    break;
+                switch (option)
+                {
+                    case "1":
+                        CreateReview();
+                        break;
 
-                case "4":
-                    UpdateReview();
-                    break;
+                    case "2":
+                        GetReviewsForOneProduct();
+                        break;
 
-                case "5":
-                    DeleteReview();
-                    break;
+                    case "3":
+                        GetAllReviews();
+                        break;
 
-                case "9":
-                    StartMenu();
-                    break;
+                    case "4":
+                        UpdateReview();
+                        break;
 
-                default:
-                    Console.WriteLine("Invalid choice, try again");
-                    PressToContinue();
-                    break;
+                    case "5":
+                        DeleteReview();
+                        break;
+
+                    case "9":
+                        StartMenu();
+                        break;
+
+                    default:
+                        Console.WriteLine("Invalid choice, try again");
+                        PressToContinue();
+                        break;
+                }
             }
-
         }
         catch (Exception ex) { Console.WriteLine("ERROR :: " + ex.Message); }
     }
@@ -2358,8 +2230,7 @@ public class MenuService
 
             DisplayProductIdAndName();
 
-            Console.Write("Enter id for product to review: ");
-            var productId = int.Parse(Console.ReadLine()!);
+            var productId = GetValidIdUserInput("Enter id for product to review: ");
 
             var product = _productService.GetOneProduct(x => x.Id == productId);
             if(product != null)
@@ -2384,6 +2255,12 @@ public class MenuService
                     Console.WriteLine("Something went wrong! Could not create review");
                 }
             }
+            else
+            {
+                Console.WriteLine("No product id found, try again");
+                PressToContinue();
+                return;
+            }
             PressToContinue();
         }
         catch (Exception ex) { Console.WriteLine("ERROR :: " + ex.Message); }
@@ -2397,29 +2274,26 @@ public class MenuService
 
             DisplayProductIdAndName();
 
-
-            Console.Write("Enter id to see reviews: ");
-            var productId = int.Parse(Console.ReadLine()!);
+            var productId = GetValidIdUserInput("Enter id to see reviews: ");
 
             var reviews = _reviewService.GetAllReviews().Where(x => x.ProductId == productId);
 
             if(reviews.Any())
             {
                 var reviewCount = reviews.Count();
-                Console.WriteLine($"This product has {reviewCount} {(reviewCount > 1 ? "reviews" : "review")}");
-                foreach(var review in reviews)
+                Console.WriteLine($"Reviews for product:\n");
+                foreach (var review in reviews)
                 {
                     Console.WriteLine($"For product: {review.Product.ProductName}");
                     Console.WriteLine($"Review: {review.ReviewText}");
-                    Console.WriteLine($"Created: {review.ReviewDate}\n");
-
+                    Console.WriteLine($"Created: {review.ReviewDate}");
+                    Console.WriteLine("______________________________________\n");
                 }
             }
             else
             {
                 Console.WriteLine("No Reviews found");
             }
-
             PressToContinue();
         }
         catch (Exception ex) { Console.WriteLine("ERROR :: " + ex.Message); }
@@ -2445,8 +2319,7 @@ public class MenuService
             ClearAndTitle("Update Review");
 
             var allReviews = _reviewService.GetReviewsWithSameId();
-            Console.Write("Enter productid to update review text:");
-            var productId = int.Parse(Console.ReadLine()!);
+            var productId = GetValidIdUserInput("Enter product id to update review text: ");
 
             var reviewsForProduct = allReviews.Where(x => x.Product.Id == productId).ToList();
             if (reviewsForProduct.Any())
@@ -2457,16 +2330,14 @@ public class MenuService
                     Console.WriteLine($"Review id: {review.Id}. ReviewText: {review.ReviewText}, Date of review: {review.ReviewDate}        (Product: {review.Product.ProductName})");
                 }
 
-                Console.Write("Enter id for the review you want to update: ");
-                var reviewId = int.Parse(Console.ReadLine()!);
+                var reviewId = GetValidIdUserInput("Enter id for the review you want to update: ");
                 var reviewToUpdate = reviewsForProduct.FirstOrDefault(x => x.Id == reviewId);
                 if (reviewToUpdate != null)
                 {
                     Console.WriteLine($"Selected review: ");
                     Console.WriteLine($"Review id: {reviewToUpdate.Id}. ReviewText: {reviewToUpdate.ReviewText}, Date of review: {reviewToUpdate.ReviewDate}        (Product: {reviewToUpdate.Product.ProductName})");
 
-                    Console.WriteLine("\nEnter new review text: ");
-                    var newReviewText = Console.ReadLine();
+                    var newReviewText = GetValidStringUserInput("\nEnter new review text: ");
                     if (!string.IsNullOrEmpty(newReviewText))
                     {
                         reviewToUpdate.ReviewText = newReviewText;
@@ -2480,7 +2351,7 @@ public class MenuService
                 }
                 else
                 {
-                    Console.WriteLine($"Review with id {reviewId} not found for product id {productId}.");
+                    Console.WriteLine($"Review with id {reviewId} was not found.");
                 }
             }
             else
@@ -2502,8 +2373,7 @@ public class MenuService
 
             var allReviews = _reviewService.GetReviewsWithSameId();
 
-            Console.Write("Enter productid to remove review: ");
-            var productId = int.Parse(Console.ReadLine()!);
+            var productId = GetValidIdUserInput("Enter productid to remove review: ");
 
             var reviewsForProduct = allReviews.Where(x => x.ProductId == productId).ToList();
             if (reviewsForProduct.Any())
@@ -2514,8 +2384,7 @@ public class MenuService
                     Console.WriteLine($"Review id: {review.Id}. ReviewText: {review.ReviewText}, Date of review: {review.ReviewDate}        (Product: {review.Product.ProductName})");
                 }
 
-                Console.Write("\nEnter id for the review you want to delete: ");
-                var reviewId = int.Parse(Console.ReadLine()!);
+                var reviewId = GetValidIdUserInput("\nEnter id for the review you want to delete: ");
 
                 var reviewToDelete = reviewsForProduct.FirstOrDefault(x => x.Id == reviewId);
                 if(reviewToDelete != null)
@@ -2530,7 +2399,6 @@ public class MenuService
                 {
                     Console.WriteLine("Something went wrong, try again!");
                 }
-
             }
             PressToContinue();
         }
@@ -2544,38 +2412,41 @@ public class MenuService
         //create and delete is being bound to product
         try
         {
-            ClearAndTitle("Description Menu");
-            Console.WriteLine("1. Get Description For Specific Product");
-            Console.WriteLine("2. Get All Descriptions");
-            Console.WriteLine("3. Update Description");
-            Console.WriteLine("9. Back to main menu");
-            Console.Write("Enter option: ");
-            var option = Console.ReadLine();
-
-            switch (option)
+            while(true)
             {
-                case "1":
-                    GetDescriptionForOneProductMenu();
-                    break;
+                ClearAndTitle("Description Menu");
+                Console.WriteLine("1. Get Description For Specific Product");
+                Console.WriteLine("2. Get All Descriptions");
+                Console.WriteLine("3. Update Description");
+                
+                Console.WriteLine("\n9. Back to main menu");
+                Console.Write("Enter option: ");
+                var option = Console.ReadLine();
 
-                case "2":
-                    GetAllDescriptionsMenu();
-                    break;
+                switch (option)
+                {
+                    case "1":
+                        GetDescriptionForOneProductMenu();
+                        break;
 
-                case "3":
-                    UpdateDescriptionMenu();
-                    break;
+                    case "2":
+                        GetAllDescriptionsMenu();
+                        break;
 
-                case "9":
-                    StartMenu(); 
-                    break;
+                    case "3":
+                        UpdateDescriptionMenu();
+                        break;
 
-                default:
-                    Console.WriteLine("Invalid choice, try again");
-                    PressToContinue();
-                    break;
+                    case "9":
+                        StartMenu();
+                        break;
+
+                    default:
+                        Console.WriteLine("Invalid choice, try again");
+                        PressToContinue();
+                        break;
+                }
             }
-
         }
         catch (Exception ex) { Console.WriteLine("ERROR :: " + ex.Message); }
     }
@@ -2588,10 +2459,9 @@ public class MenuService
 
             DisplayProductIdAndName();
 
-            Console.Write("Enter the product ID to see the description: ");
-            var productId = int.Parse(Console.ReadLine()!);
+            var productId = GetValidIdUserInput("Enter the product ID to see the description: ");
 
-            var description = _descriptionService.GetOneDescription(d => d.Products.Any(p => p.Id == productId));
+            var description = _descriptionService.GetOneDescription(x => x.Products.Any(x => x.Id == productId));
 
             if (description != null)
             {
@@ -2640,22 +2510,22 @@ public class MenuService
             ClearAndTitle("Update Description");
 
             DisplayProductIdAndName();
-            Console.WriteLine("Enter a product to update ingress and description text");
-            var productId = int.Parse(Console.ReadLine()!);
+            var productId = GetValidIdUserInput("Enter a product to update ingress and description text: ");
 
             var productEntity = _productService.GetOneProduct(x => x.Id == productId);
             if( productEntity != null )
             {
-                Console.WriteLine("Enter ingress: ");
-                var ingress = Console.ReadLine();
-                if(string.IsNullOrWhiteSpace(ingress))
+                var ingress = GetValidStringUserInput("Enter ingress: ");
+
+
+                if (string.IsNullOrWhiteSpace(ingress))
                 {
                     Console.WriteLine("Can´t be empty, try again!");
                     PressToContinue();
                     return;
                 }
 
-                Console.WriteLine("\nEnter descritpion: ");
+                Console.WriteLine("\nEnter descritpion (optional): ");
                 var descriptionText = Console.ReadLine();
 
                 var existingDescriptionEntity = _descriptionService.GetOneDescription(x => x.Products.Any(p => p.Id == productId));
@@ -2691,8 +2561,68 @@ public class MenuService
         catch (Exception ex) { Console.WriteLine("ERROR :: " + ex.Message); }
     }
 
+    /// <summary>
+    ///     Clears console and displays the title entered
+    /// </summary>
+    /// <param name="title">the title to display on the console window</param>
+    private void ClearAndTitle(string title)
+    {
+        Console.Clear();
+        Console.WriteLine($"{title}\n\n");
+    }
+    
+    private void PressToContinue()
+    {
+        Console.WriteLine("\nPress any key to continue");
+        Console.ReadKey();
+    }
 
+    /// <summary>
+    ///     A method to get valid input from user
+    /// </summary>
+    /// <param name="promptText">Text to instruct the user what to enter</param>
+    /// <returns>the valid input from the user</returns>
+    public int GetValidIdUserInput(string promptText)
+    {
+        while (true)
+        {
+            Console.Write(promptText);
+            var userInput = Console.ReadLine()!.ToLower();
+            if(userInput.Equals("q"))
+            {
+                StartMenu();
+            }
 
+            if (int.TryParse(userInput, out var result))
+            {
+                return result;
+            }
+            else
+            {
+                Console.WriteLine("Invalid input. Try again or press 'q' to get to main menu.");
+            }
+        }
+    }
+    public string GetValidStringUserInput(string promptText)
+    {
+        while (true)
+        {
+            Console.Write(promptText);
+            string userInput = Console.ReadLine()!.ToLower();
 
-
+            if (string.IsNullOrWhiteSpace(userInput))
+            {
+                Console.WriteLine("Invalid input. Try again or enter 'q' to return to main menu");
+            }
+            else if (userInput.Equals("q"))
+            {
+                StartMenu();
+                return null!; 
+            }
+            else
+            {
+                return userInput;
+            }
+        }
+    }
 }

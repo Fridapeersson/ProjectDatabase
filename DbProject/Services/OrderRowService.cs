@@ -124,7 +124,7 @@ public class OrderRowService
             var orderRows = _orderRowRepository.GetAll();
 
             // gruppera orderRows efter OrderId
-            var groupedOrderRows = orderRows.GroupBy(i => i.OrderId);
+            var groupedOrderRows = orderRows.GroupBy(x => x.OrderId);
 
             foreach (var groupedOrderRow in groupedOrderRows)
             {
@@ -133,7 +133,7 @@ public class OrderRowService
                 {
                     Console.WriteLine($"Product: {orderRow.Product.ProductName}, Quantity: {orderRow.Quantity}");
                 }
-                Console.WriteLine();
+                Console.WriteLine("\n_______________________________________________________\n");
             }
             return orderRows;
         }
